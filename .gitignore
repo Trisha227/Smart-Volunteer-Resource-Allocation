@@ -1,0 +1,14 @@
+# OS generated files
+.DS_Store
+Thumbs.db
+.directory
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project files
+node_modules/
+.npm/

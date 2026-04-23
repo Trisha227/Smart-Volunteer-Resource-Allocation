@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Resource Allocation | Volunteer Coordination</title>
+    
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Material Symbols Outlined -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span class="material-symbols-outlined logo-icon">language</span>
+                <h1>ImpactConnect</h1>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-view="dashboard">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </button>
+                <button class="nav-item" data-view="matcher">
+                    <span class="material-symbols-outlined">hub</span>
+                    Smart Matcher
+                </button>
+                <button class="nav-item" data-view="data-entry">
+                    <span class="material-symbols-outlined">post_add</span>
+                    Ingest Data
+                </button>
+                <button class="nav-item" data-view="facilities">
+                    <span class="material-symbols-outlined">apartment</span>
+                    Facilities
+                </button>
+                <button class="nav-item" data-view="analytics">
+                    <span class="material-symbols-outlined">insights</span>
+                    Analytics
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <img src="https://i.pravatar.cc/150?img=68" alt="Admin" class="avatar">
+                    <div class="user-info">
+                        <span class="user-name">Coordinator</span>
+                        <span class="user-role">System Admin</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header class="topbar">
+                <div class="search-bar">
+                    <span class="material-symbols-outlined">search</span>
+                    <input type="text" placeholder="Search tasks, volunteers, or reports...">
+                </div>
+                <div class="topbar-actions">
+                    <button class="icon-btn"><span class="material-symbols-outlined">notifications</span><span class="badge">3</span></button>
+                    <button class="icon-btn"><span class="material-symbols-outlined">settings</span></button>
+                </div>
+            </header>
+
+            <!-- View Container -->
+            <div id="view-container" class="view-container">
+                <!-- Views will be dynamically injected here via app.js -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Templates -->
+    
+    <!-- Dashboard Template -->
+    <template id="tpl-dashboard">
+        <div class="view dashboard-view">
+            <div class="page-header">
+                <h2>Overview</h2>
+                <p>Real-time community needs and resource availability.</p>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon urgent"><span class="material-symbols-outlined">emergency</span></div>
+                    <div class="metric-info">
+                        <h3>Critical Tasks</h3>
+                        <p class="metric-value" id="dash-urgent">0</p>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon active"><span class="material-symbols-outlined">group</span></div>
+                    <div class="metric-info">
+                        <h3>Active Volunteers</h3>
+                        <p class="metric-value" id="dash-volunteers">0</p>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon success"><span class="material-symbols-outlined">task_alt</span></div>
+                    <div class="metric-info">
+                        <h3>Needs Met (This Week)</h3>
+                        <p class="metric-value" id="dash-met">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                <div class="urgent-needs-section">
+                    <h3>Urgent Action Required</h3>
+                    <div class="task-list" id="urgent-task-list">
+                        <!-- Tasks injected here -->
+                    </div>
+                </div>
+                <div class="map-preview-section glass-panel">
+                    <div class="map-overlay">
+                        <h3>Hotspots</h3>
+                        <p>Most activity clustered in Downtown and Southside areas. <strong>Downtown Shelter</strong> is currently at 85% capacity.</p>
+                        <div style="display: flex; gap: 8px; margin-top: 12px;">
+                            <button class="btn btn-primary" onclick="app.switchView('matcher')">Open Matcher</button>
+                            <button class="btn btn-secondary" onclick="app.switchView('facilities')">View Facilities</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Smart Matcher Template -->
+    <template id="tpl-matcher">
+        <div class="view matcher-view">
+            <div class="page-header">
+                <h2>Smart Matcher Engine</h2>
+                <p>AI-driven allocation connecting volunteers to high-priority tasks based on skills and proximity.</p>
+            </div>
+
+            <div class="matcher-layout">
+                <div class="task-selection-panel glass-panel">
+                    <h3>Unassigned Tasks</h3>
+                    <div class="filter-bar">
+                        <select id="filter-urgency">
+                            <option value="all">All Urgency</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="matcher-task-list" id="matcher-task-list">
+                        <!-- Tasks to match -->
+                    </div>
+                </div>
+
+                <div class="match-results-panel">
+                    <div class="empty-state" id="matcher-empty">
+                        <span class="material-symbols-outlined empty-icon">hub</span>
+                        <h3>Select a task to find matches</h3>
+                        <p>The engine will analyze proximity, skills, and availability.</p>
+                    </div>
+                    
+                    <div class="active-match-state hidden" id="matcher-active">
+                        <div class="selected-task-header glass-panel" id="selected-task-details">
+                            <!-- Selected task details -->
+                        </div>
+                        
+                        <div class="recommended-volunteers">
+                            <h3>Top Recommended Volunteers</h3>
+                            <div class="volunteer-list" id="volunteer-match-list">
+                                <!-- Matched volunteers -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Data Entry Template -->
+    <template id="tpl-data-entry">
+        <div class="view data-entry-view">
+            <div class="page-header">
+                <h2>Ingest Field Data</h2>
+                <p>Digitize paper surveys and field reports to update community needs.</p>
+            </div>
+
+            <div class="form-container glass-panel">
+                <div class="ai-assist-box" style="margin-bottom: 32px; padding: 24px; background: rgba(79, 70, 229, 0.1); border: 1px dashed var(--accent-primary); border-radius: 12px;">
+                    <h3 style="font-size: 16px; margin-bottom: 8px;"><span class="material-symbols-outlined" style="vertical-align:middle; margin-right:8px; color:var(--accent-primary)">auto_awesome</span>AI-Assisted Entry</h3>
+                    <p style="font-size: 14px; color:var(--text-secondary); margin-bottom: 16px;">Paste the raw text from the paper survey here. Google Gemini will automatically extract the details.</p>
+                    <textarea id="ai-raw-text" rows="3" placeholder="e.g. In Downtown area, 50 families need urgent food supply due to flooding. They need people with driving skills and logistics experience..." style="margin-bottom: 16px;"></textarea>
+                    <div id="ai-key-section" style="margin-bottom: 16px; display:none;">
+                        <label>Enter Google AI API Key:</label>
+                        <input type="password" id="gemini-api-key" placeholder="Paste your API key here...">
+                    </div>
+                    <button type="button" class="btn btn-primary" id="btn-ai-analyze">Analyze Survey with AI</button>
+                    <div id="ai-loader" class="hidden" style="margin-top: 12px; font-size: 14px; color: var(--accent-primary);">Analyzing with Gemini...</div>
+                </div>
+
+                <form id="ingest-form">
+                    <div class="form-group">
+                        <label>Report Title / Need Summary</label>
+                        <input type="text" required placeholder="e.g. Emergency food distribution needed">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select required>
+                                <option value="">Select Category</option>
+                                <option value="food">Food Security</option>
+                                <option value="medical">Medical Assistance</option>
+                                <option value="shelter">Shelter/Housing</option>
+                                <option value="education">Education</option>
+                                <option value="logistics">Transport/Logistics</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Urgency Level</label>
+                            <select required>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Required Skills (comma separated)</label>
+                        <input type="text" placeholder="e.g. First Aid, Driving, Translation">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Location Area</label>
+                        <input type="text" required placeholder="e.g. Downtown, Sector 4">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Detailed Description</label>
+                        <textarea rows="4" placeholder="Enter full details from the paper report..."></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary">Clear</button>
+                        <button type="submit" class="btn btn-primary">Submit to System</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
+
+    <!-- Facilities Template -->
+    <template id="tpl-facilities">
+        <div class="view facilities-view">
+            <div class="page-header">
+                <h2>Infrastructure & Shelters</h2>
+                <p>Monitor status, occupancy, and immediate needs of community facilities.</p>
+            </div>
+
+            <div class="facilities-grid" id="facilities-grid">
+                <!-- Facilities injected here -->
+            </div>
+        </div>
+    </template>
+
+    <!-- Analytics Template -->
+    <template id="tpl-analytics">
+        <div class="view analytics-view">
+            <div class="page-header">
+                <h2>Impact Analytics</h2>
+                <p>Data-driven insights on community needs and volunteer effectiveness.</p>
+            </div>
+
+            <div class="analytics-layout">
+                <div class="chart-section glass-panel">
+                    <h3>Needs by Category</h3>
+                    <div id="category-chart-container" class="chart-container bar-chart-container">
+                        <!-- Bars injected here -->
+                    </div>
+                </div>
+
+                <div class="chart-section glass-panel">
+                    <h3>Weekly Resolution Rate (%)</h3>
+                    <div id="weekly-chart-container" class="chart-container line-chart-container">
+                        <!-- Sparklines injected here -->
+                    </div>
+                </div>
+
+                <div class="stats-section glass-panel">
+                    <h3>Hotspot Performance</h3>
+                    <div id="area-stats-list" class="area-stats-list">
+                        <!-- Areas injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="js/mockData.js"></script>
+    <script src="js/matchingEngine.js"></script>
+    <script src="js/aiService.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
