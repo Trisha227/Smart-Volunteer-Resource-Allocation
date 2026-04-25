@@ -35,6 +35,24 @@ class App {
             };
         }
 
+        // Setup Notifications
+        const notifBtn = document.getElementById('btn-notifications');
+        const notifList = document.getElementById('notification-list');
+        if (notifBtn && notifList) {
+            notifBtn.onclick = () => notifList.classList.toggle('hidden');
+            window.addEventListener('click', (e) => {
+                if (!notifBtn.contains(e.target) && !notifList.contains(e.target)) {
+                    notifList.classList.add('hidden');
+                }
+            });
+        }
+
+        // Setup Global Search
+        const searchInput = document.querySelector('.search-bar input');
+        if (searchInput) {
+            searchInput.oninput = (e) => this.handleGlobalSearch(e.target.value);
+        }
+
         // Setup Language Switcher
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.onclick = (e) => {
@@ -249,7 +267,12 @@ class App {
         document.getElementById('selected-task-details').innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
                 <h3 style="font-size: 20px;">${task.title}</h3>
-                <span class="tag ${task.urgency}">${task.urgency}</span>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn ${task.status === 'Resolved' ? 'btn-success' : 'btn-secondary'}" style="font-size:12px; padding:4px 12px;" onclick="app.toggleTaskStatus('${task.id}')">
+                        ${task.status === 'Resolved' ? 'Resolved ✓' : 'Mark Resolved'}
+                    </button>
+                    <span class="tag ${task.urgency}">${task.urgency}</span>
+                </div>
             </div>
             <p style="color: var(--text-secondary); margin-bottom: 16px;">${task.description}</p>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
@@ -480,6 +503,51 @@ class App {
             `;
             areaContainer.appendChild(el);
         });
+    }
+
+    // --- Professional Workflow Methods ---
+    handleGlobalSearch(query) {
+        if (!query) {
+            if (this.currentView === 'matcher') this.renderMatcherTaskList(this.tasks);
+            return;
+        }
+        
+        const q = query.toLowerCase();
+        const filteredTasks = this.tasks.filter(t => 
+            t.title.toLowerCase().includes(q) || 
+            t.category.toLowerCase().includes(q) || 
+            t.location.toLowerCase().includes(q)
+        );
+
+        if (this.currentView === 'matcher') {
+            this.renderMatcherTaskList(filteredTasks);
+        }
+    }
+
+    exportToCSV() {
+        const headers = ['Title', 'Category', 'Urgency', 'Location', 'Status'];
+        const rows = this.tasks.map(t => [t.title, t.category, t.urgency, t.location, t.status || 'Pending']);
+        
+        let csvContent = "data:text/csv;charset=utf-8," 
+            + headers.join(",") + "\n"
+            + rows.map(e => e.join(",")).join("\n");
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "impact_report.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    toggleTaskStatus(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        task.status = task.status === 'Resolved' ? 'Pending' : 'Resolved';
+        this.renderDashboard();
+        if (this.currentView === 'matcher') this.selectTaskForMatching(taskId);
     }
 }
 

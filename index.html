@@ -78,7 +78,20 @@
                 </div>
                 <div class="topbar-actions">
                     <button class="icon-btn" id="theme-toggle"><span class="material-symbols-outlined">dark_mode</span></button>
-                    <button class="icon-btn"><span class="material-symbols-outlined">notifications</span><span class="badge">3</span></button>
+                    <div class="notification-wrapper">
+                        <button class="icon-btn" id="btn-notifications">
+                            <span class="material-symbols-outlined">notifications</span>
+                            <span class="badge">3</span>
+                        </button>
+                        <div class="dropdown notification-dropdown hidden" id="notification-list">
+                            <div class="dropdown-header">Recent Alerts</div>
+                            <div class="dropdown-content">
+                                <div class="notif-item"><strong>New Survey:</strong> Downtown flood report...</div>
+                                <div class="notif-item"><strong>Critical:</strong> Shelter at 95% capacity...</div>
+                                <div class="notif-item"><strong>Volunteer:</strong> Sarah Chen assigned...</div>
+                            </div>
+                        </div>
+                    </div>
                     <button class="icon-btn"><span class="material-symbols-outlined">settings</span></button>
                 </div>
             </header>
@@ -284,9 +297,15 @@
     <!-- Analytics Template -->
     <template id="tpl-analytics">
         <div class="view analytics-view">
-            <div class="page-header">
-                <h2>Impact Analytics</h2>
-                <p>Data-driven insights on community needs and volunteer effectiveness.</p>
+            <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h2>Impact Analytics</h2>
+                    <p>Data-driven insights on community needs and volunteer effectiveness.</p>
+                </div>
+                <div class="export-actions">
+                    <button class="btn btn-secondary" onclick="app.exportToCSV()"><span class="material-symbols-outlined" style="font-size:16px; margin-right:8px; vertical-align:middle;">download</span>Export CSV</button>
+                    <button class="btn btn-primary" onclick="window.print()"><span class="material-symbols-outlined" style="font-size:16px; margin-right:8px; vertical-align:middle;">picture_as_pdf</span>Save Report</button>
+                </div>
             </div>
 
             <div class="analytics-layout">
