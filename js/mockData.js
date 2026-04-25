@@ -54,43 +54,43 @@ const mockTasks = [
 const mockVolunteers = [
     {
         id: 'v1',
-        name: 'Alex Rivera',
-        avatar: 'https://i.pravatar.cc/150?img=11',
-        skills: ['Driving', 'Logistics', 'Spanish'],
+        name: 'Sarah Chen',
         location: 'Downtown',
-        availability: 'High'
+        skills: ['Medical Help', 'First Aid', 'Translation'],
+        availability: 'High',
+        avatar: 'https://i.pravatar.cc/150?img=47',
+        points: 1250,
+        badges: ['Medical Hero', 'Top Responder']
     },
     {
         id: 'v2',
-        name: 'Sarah Chen',
-        avatar: 'https://i.pravatar.cc/150?img=5',
-        skills: ['First Aid', 'Translation', 'Organization'],
+        name: 'Marcus Miller',
         location: 'Sector 4',
-        availability: 'Medium'
+        skills: ['Logistics/Supplies', 'Driving', 'Construction'],
+        availability: 'Medium',
+        avatar: 'https://i.pravatar.cc/150?img=11',
+        points: 840,
+        badges: ['Logistics Pro']
     },
     {
         id: 'v3',
-        name: 'Marcus Johnson',
-        avatar: 'https://i.pravatar.cc/150?img=33',
-        skills: ['Construction', 'Heavy Lifting', 'Physical Labor'],
-        location: 'Southside',
-        availability: 'High'
+        name: 'Elena Rodriguez',
+        location: 'Westside',
+        skills: ['Food Security', 'Cooking', 'Logistics/Supplies'],
+        availability: 'High',
+        avatar: 'https://i.pravatar.cc/150?img=26',
+        points: 2100,
+        badges: ['Impact Leader', 'Food Security Star']
     },
     {
         id: 'v4',
-        name: 'Elena Rostova',
-        avatar: 'https://i.pravatar.cc/150?img=44',
-        skills: ['Data Entry', 'Organization', 'Coordination'],
-        location: 'West End',
-        availability: 'Low'
-    },
-    {
-        id: 'v5',
-        name: 'David Smith',
+        name: 'David Kim',
+        location: 'Downtown',
+        skills: ['Emergency Shelter', 'First Aid', 'Construction'],
+        availability: 'Low',
         avatar: 'https://i.pravatar.cc/150?img=12',
-        skills: ['Driving', 'Heavy Lifting'],
-        location: 'Riverfront',
-        availability: 'High'
+        points: 450,
+        badges: ['Shelter Support']
     }
 ];
 

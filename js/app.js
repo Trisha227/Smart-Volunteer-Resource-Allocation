@@ -4,6 +4,13 @@ class App {
         this.volunteers = [...mockVolunteers];
         this.matcher = new MatchingEngine(this.volunteers);
         this.ai = new AIService();
+        this.map = null;
+        this.currentLang = 'en';
+        this.translations = {
+            en: { dashboard: 'Dashboard', matcher: 'Smart Matcher', ingest: 'Ingest Data', facilities: 'Facilities', analytics: 'Analytics', overview: 'Overview' },
+            es: { dashboard: 'Tablero', matcher: 'Buscador Inteligente', ingest: 'Ingresar Datos', facilities: 'Instalaciones', analytics: 'Analítica', overview: 'Resumen' },
+            hi: { dashboard: 'डैशबोर्ड', matcher: 'स्मार्ट मैचर', ingest: 'डेटा दर्ज करें', facilities: 'सुविधाएं', analytics: 'एनालिटिक्स', overview: 'अवलोकन' }
+        };
         
         this.currentView = '';
         this.init();
@@ -18,8 +25,115 @@ class App {
             });
         });
 
+        // Setup Theme Toggle
+        const themeBtn = document.getElementById('theme-toggle');
+        if (themeBtn) {
+            themeBtn.onclick = () => {
+                document.documentElement.classList.toggle('light-mode');
+                const icon = themeBtn.querySelector('.material-symbols-outlined');
+                icon.textContent = document.documentElement.classList.contains('light-mode') ? 'light_mode' : 'dark_mode';
+            };
+        }
+
+        // Setup Language Switcher
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.onclick = (e) => {
+                const lang = e.target.dataset.lang;
+                this.updateLanguage(lang);
+            };
+        });
+
         // Load initial view
         this.switchView('dashboard');
+    }
+
+    updateLanguage(lang) {
+        this.currentLang = lang;
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+        
+        // Update Sidebar Navigation Text
+        const navs = document.querySelectorAll('.nav-item');
+        navs[0].childNodes[2].nodeValue = ' ' + this.translations[lang].dashboard;
+        navs[1].childNodes[2].nodeValue = ' ' + this.translations[lang].matcher;
+        navs[2].childNodes[2].nodeValue = ' ' + this.translations[lang].ingest;
+        navs[3].childNodes[2].nodeValue = ' ' + this.translations[lang].facilities;
+        navs[4].childNodes[2].nodeValue = ' ' + this.translations[lang].analytics;
+
+        // Re-render current view to update content
+        const view = this.currentView;
+        this.currentView = ''; // Reset to force re-render
+        this.switchView(view);
+    }
+
+    // --- Map Integration ---
+    initMap() {
+        const mapContainer = document.getElementById('interactive-map');
+        if (!mapContainer || this.map) return;
+
+        // Initialize map centered on a simulated city area
+        this.map = L.map('interactive-map').setView([40.7128, -74.0060], 13);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+        }).addTo(this.map);
+
+        // Add markers for Facilities
+        mockFacilities.forEach(facility => {
+            // Simulated coords based on area
+            const coords = facility.area === 'Downtown' ? [40.7128, -74.0060] : 
+                          facility.area === 'Sector 4' ? [40.7200, -73.9900] : 
+                          [40.7050, -74.0150];
+            
+            const marker = L.marker(coords).addTo(this.map);
+            marker.bindPopup(`<b>${facility.name}</b><br>Occupancy: ${facility.occupancy}%`);
+        });
+
+        // Add circle hotspots for urgent tasks
+        this.tasks.filter(t => t.urgency === 'critical').forEach((task, i) => {
+            const coords = [40.7150 + (i * 0.005), -74.0080 - (i * 0.005)];
+            L.circle(coords, {
+                color: '#EF4444',
+                fillColor: '#EF4444',
+                fillOpacity: 0.5,
+                radius: 300
+            }).addTo(this.map).bindPopup(`<b>Critical: ${task.title}</b>`);
+        });
+    }
+
+    // --- Dashboard View ---
+    renderDashboard() {
+        const urgentTasks = this.tasks.filter(t => t.urgency === 'critical' || t.urgency === 'high');
+        
+        document.getElementById('dash-urgent').textContent = urgentTasks.length;
+        document.getElementById('dash-volunteers').textContent = this.volunteers.length;
+        document.getElementById('dash-met').textContent = '24'; // Mocked stat
+
+        const listContainer = document.getElementById('urgent-task-list');
+        listContainer.innerHTML = '';
+
+        urgentTasks.slice(0, 4).forEach(task => {
+            const el = document.createElement('div');
+            el.className = `task-item ${task.urgency}`;
+            el.onclick = () => {
+                this.switchView('matcher');
+                setTimeout(() => this.selectTaskForMatching(task.id), 50);
+            };
+
+            el.innerHTML = `
+                <div class="task-main">
+                    <span class="task-title">${task.title}</span>
+                    <div class="task-meta">
+                        <span><span class="material-symbols-outlined">location_on</span> ${task.location}</span>
+                        <span><span class="material-symbols-outlined">schedule</span> ${task.timestamp}</span>
+                    </div>
+                </div>
+                <div class="tag ${task.urgency}">${task.urgency}</div>
+            `;
+            listContainer.appendChild(el);
+        });
+
+        // Initialize map after dashboard is rendered
+        setTimeout(() => this.initMap(), 100);
     }
 
     switchView(viewId) {
@@ -63,40 +177,13 @@ class App {
         } else if (viewId === 'analytics') {
             this.renderAnalytics();
         }
+
+        // Reset map instance when navigating away from dashboard
+        if (viewId !== 'dashboard') {
+            this.map = null;
+        }
     }
 
-    // --- Dashboard View ---
-    renderDashboard() {
-        const urgentTasks = this.tasks.filter(t => t.urgency === 'critical' || t.urgency === 'high');
-        
-        document.getElementById('dash-urgent').textContent = urgentTasks.length;
-        document.getElementById('dash-volunteers').textContent = this.volunteers.length;
-        document.getElementById('dash-met').textContent = '24'; // Mocked stat
-
-        const listContainer = document.getElementById('urgent-task-list');
-        listContainer.innerHTML = '';
-
-        urgentTasks.slice(0, 4).forEach(task => {
-            const el = document.createElement('div');
-            el.className = `task-item ${task.urgency}`;
-            el.onclick = () => {
-                this.switchView('matcher');
-                setTimeout(() => this.selectTaskForMatching(task.id), 50);
-            };
-
-            el.innerHTML = `
-                <div class="task-main">
-                    <span class="task-title">${task.title}</span>
-                    <div class="task-meta">
-                        <span><span class="material-symbols-outlined">location_on</span> ${task.location}</span>
-                        <span><span class="material-symbols-outlined">schedule</span> ${task.timestamp}</span>
-                    </div>
-                </div>
-                <div class="tag ${task.urgency}">${task.urgency}</div>
-            `;
-            listContainer.appendChild(el);
-        });
-    }
 
     // --- Matcher View ---
     renderMatcher() {
@@ -195,12 +282,18 @@ class App {
                 <div class="vol-info">
                     <img src="${volunteer.avatar}" class="vol-avatar" alt="${volunteer.name}">
                     <div class="vol-details">
-                        <h4>${volunteer.name}</h4>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <h4>${volunteer.name}</h4>
+                            <span class="impact-pts" style="font-size:10px; background:rgba(79, 70, 229, 0.2); color:var(--accent-primary); padding:2px 6px; border-radius:10px; font-weight:700;">${volunteer.points} pts</span>
+                        </div>
                         <div class="vol-meta">
                             <span><span class="material-symbols-outlined" style="font-size:16px;">location_on</span> ${volunteer.location}</span>
                             <span style="color: ${volunteer.availability === 'High' ? 'var(--success)' : 'inherit'}">
                                 ${volunteer.availability} Availability
                             </span>
+                        </div>
+                        <div style="margin-top: 4px; display:flex; gap:4px; flex-wrap:wrap;">
+                            ${volunteer.badges.map(b => `<span style="font-size:10px; color:var(--warning); border:1px solid var(--warning); padding:1px 4px; border-radius:4px;">${b}</span>`).join('')}
                         </div>
                         <div style="margin-top: 6px; font-size: 12px; color: var(--text-secondary)">
                             ${reasons.join(' • ')}

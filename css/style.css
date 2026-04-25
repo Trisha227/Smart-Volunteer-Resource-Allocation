@@ -1,21 +1,31 @@
 :root {
-    /* Color Palette */
+    /* Color Palette - Premium Dark Theme (Default) */
     --bg-main: #0B0E14;
-    --bg-secondary: #151A23;
-    --bg-panel: rgba(30, 36, 48, 0.6);
-    --border-color: rgba(255, 255, 255, 0.08);
-    
-    --text-primary: #FFFFFF;
-    --text-secondary: #A0AABF;
-    
+    --bg-sidebar: #11141B;
+    --bg-panel: rgba(255, 255, 255, 0.03);
+    --bg-panel-solid: #161B22;
     --accent-primary: #4F46E5;
-    --accent-hover: #6366F1;
-    --accent-glow: rgba(79, 70, 229, 0.4);
-    
-    --success: #10B981;
+    --accent-secondary: #818CF8;
+    --text-primary: #FFFFFF;
+    --text-secondary: #94A3B8;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --urgent: #EF4444;
     --warning: #F59E0B;
-    --danger: #EF4444;
-    --danger-glow: rgba(239, 68, 68, 0.3);
+    --success: #10B981;
+    --sidebar-width: 280px;
+    --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:root.light-mode {
+    --bg-main: #F8FAFC;
+    --bg-sidebar: #FFFFFF;
+    --bg-panel: rgba(0, 0, 0, 0.03);
+    --bg-panel-solid: #FFFFFF;
+    --text-primary: #0F172A;
+    --text-secondary: #64748B;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --bg-panel: #FFFFFF;
+}
     
     /* Typography */
     --font-main: 'Outfit', sans-serif;
@@ -411,6 +421,43 @@ body {
     color: var(--text-secondary);
     font-size: 13px;
     align-items: center;
+}
+
+.topbar-actions {
+    display: flex;
+    gap: 16px;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    position: relative;
+    transition: var(--transition-fast);
+    padding: 8px;
+    border-radius: 8px;
+}
+
+.icon-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: var(--danger);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .task-meta span {
