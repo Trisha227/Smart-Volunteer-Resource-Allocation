@@ -65,6 +65,12 @@ Alternatively, use **Docker Compose**:
 docker-compose up -d
 ```
 
+### ☁️ Deploying Docker to the Cloud
+You can deploy this container to professional cloud platforms:
+*   **Google Cloud Run:** Perfect for this project. Push the image to Google Container Registry and deploy as a serverless service.
+*   **AWS Fargate:** Run the container without managing servers.
+*   **DigitalOcean App Platform:** Automatically detects the `Dockerfile` and deploys the site.
+
 ---
 
 ## ☁️ Cloud Deployment (Firebase)
