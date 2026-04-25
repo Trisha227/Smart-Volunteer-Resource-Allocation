@@ -4,7 +4,15 @@ class App {
         this.volunteers = [...mockVolunteers];
         this.matcher = new MatchingEngine(this.volunteers);
         this.ai = new AIService();
+        this.db = new DBService();
         this.map = null;
+        
+        // Load Firebase Config if saved
+        const savedConfig = localStorage.getItem('firebase_config');
+        if (savedConfig) {
+            this.db.initialize(JSON.parse(savedConfig));
+        }
+
         this.currentLang = 'en';
         this.translations = {
             en: { dashboard: 'Dashboard', matcher: 'Smart Matcher', ingest: 'Ingest Data', facilities: 'Facilities', analytics: 'Analytics', overview: 'Overview' },
@@ -321,11 +329,16 @@ class App {
                         <div style="margin-top: 6px; font-size: 12px; color: var(--text-secondary)">
                             ${reasons.join(' • ')}
                         </div>
+                        <div class="score-breakdown" style="margin-top: 10px; display:flex; gap:12px; font-size:10px; opacity:0.8;">
+                            <span>Skills: ${match.breakdown.skills}%</span>
+                            <span>Proximity: ${match.breakdown.proximity}%</span>
+                            <span>Availability: ${match.breakdown.availability}%</span>
+                        </div>
                     </div>
                 </div>
                 <div class="match-score">
                     <div class="score-circle" style="color: ${colorScore}; border-color: ${colorScore}; background: ${colorScore}22;">
-                        ${score}%
+                        ${match.score}%
                     </div>
                     <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">Assign</button>
                 </div>
@@ -372,6 +385,14 @@ class App {
                         form.querySelector('input[placeholder*="Location"]').value = result.location || '';
                         form.querySelector('textarea').value = result.description || '';
                         
+                        // Show AI Reasoning
+                        if (result.reasoning) {
+                            const reasonEl = document.createElement('div');
+                            reasonEl.style.cssText = 'margin-top:16px; padding:12px; background:rgba(255,255,255,0.05); border-radius:8px; font-size:13px; font-style:italic; border-left:3px solid var(--accent-primary);';
+                            reasonEl.innerHTML = `<strong>AI Reasoning:</strong> ${result.reasoning}`;
+                            document.getElementById('ai-raw-text').parentNode.appendChild(reasonEl);
+                        }
+
                         alert('AI Analysis successful! The form has been populated.');
                     }
                 } catch (err) {

@@ -36,16 +36,27 @@ class MatchingEngine {
         }
 
         // 3. Availability (up to 10 points)
+        let availabilityScore = 0;
         if (volunteer.availability === 'High') {
-            score += 10;
+            availabilityScore = 100;
         } else if (volunteer.availability === 'Medium') {
-            score += 5;
+            availabilityScore = 50;
         }
+
+        const finalScore = Math.round(
+            (skillScore * this.weights.skills) + 
+            (proximityScore * this.weights.proximity) + 
+            (availabilityScore * this.weights.availability)
+        );
 
         return {
             volunteer,
-            score: Math.round(score),
-            matchedSkills,
+            score: finalScore,
+            breakdown: {
+                skills: Math.round(skillScore),
+                proximity: Math.round(proximityScore),
+                availability: Math.round(availabilityScore)
+            },
             reasons
         };
     }

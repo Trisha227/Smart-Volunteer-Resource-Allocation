@@ -14,19 +14,26 @@ class AIService {
         }
 
         const prompt = `
-            You are a social impact coordinator. Analyze the following paper survey text and extract a structured JSON object.
+            You are an expert NGO Coordinator. Analyze the following field report and extract structured data.
             
-            Survey Text: "${rawText}"
+            RULES:
+            1. Category MUST be one of: Food, Medical, Shelter, Education, Logistics.
+            2. Urgency MUST be: Low, Medium, High, or Critical.
+            3. Skills should be specific capabilities needed (e.g. "Heavy Lifting", "Medical", "Driving").
+            4. Location should be the specific area mentioned.
             
-            Extract these fields:
-            1. title (short summary)
-            2. category (one of: Food Security, Medical Assistance, Shelter/Housing, Education, Transport/Logistics)
-            3. urgency (one of: low, medium, high, critical)
-            4. skills (array of required skills)
-            5. location (the area mentioned)
-            6. description (clean detailed summary)
-
-            Return ONLY the JSON object.
+            REPORT TEXT: "${rawText}"
+            
+            Respond ONLY with a JSON object in this format:
+            {
+                "title": "Short descriptive title",
+                "category": "Category name",
+                "urgency": "Urgency level",
+                "skills": ["Skill 1", "Skill 2"],
+                "location": "Area name",
+                "description": "Cleaned up summary of the need",
+                "reasoning": "Brief explanation of why you chose this category and urgency"
+            }
         `;
 
         try {
