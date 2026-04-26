@@ -4,13 +4,14 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "Dockerfile",
+      "nginx.conf",
+      "docker-compose.yml"
     ],
     "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
+      { "source": "/dashboard", "destination": "/index.html" },
+      { "source": "**", "destination": "/landing.html" }
     ]
   }
 }

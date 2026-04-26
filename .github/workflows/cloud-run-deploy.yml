@@ -6,10 +6,10 @@ on:
       - main
 
 env:
-  PROJECT_ID: smart-volunteer-coord        # Replace with your GCP Project ID
-  SERVICE_NAME: impact-connect             # Cloud Run service name
-  REGION: us-central1                      # Cloud Run region
-  IMAGE: gcr.io/${{ env.PROJECT_ID }}/impact-connect
+  PROJECT_ID: zippy-entry-396912
+  SERVICE_NAME: impact-connect
+  REGION: us-central1
+  IMAGE: gcr.io/zippy-entry-396912/impact-connect
 
 jobs:
   build-and-deploy:
