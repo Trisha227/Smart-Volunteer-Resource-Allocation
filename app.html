@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Resource Allocation | Volunteer Coordination</title>
+    
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Material Symbols Outlined -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    
+    <!-- Leaflet Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Firebase SDK (Modular) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        window.firebaseSDK = { initializeApp, getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy };
+    </script>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span class="material-symbols-outlined logo-icon">language</span>
+                <h1>ImpactConnect</h1>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-view="dashboard">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </button>
+                <button class="nav-item" data-view="matcher">
+                    <span class="material-symbols-outlined">hub</span>
+                    Smart Matcher
+                </button>
+                <button class="nav-item" data-view="data-entry">
+                    <span class="material-symbols-outlined">post_add</span>
+                    Ingest Data
+                </button>
+                <button class="nav-item" data-view="facilities">
+                    <span class="material-symbols-outlined">apartment</span>
+                    Facilities
+                </button>
+                <button class="nav-item" data-view="analytics">
+                    <span class="material-symbols-outlined">insights</span>
+                    Analytics
+                </button>
+            </nav>
+
+            <div class="language-switcher" style="padding: 16px; border-top: 1px solid var(--border-color); display: flex; gap: 8px;">
+                <button class="lang-btn active" data-lang="en">EN</button>
+                <button class="lang-btn" data-lang="es">ES</button>
+                <button class="lang-btn" data-lang="hi">HI</button>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <img src="https://i.pravatar.cc/150?img=68" alt="Admin" class="avatar">
+                    <div class="user-info">
+                        <span class="user-name">Coordinator</span>
+                        <span class="user-role">System Admin</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header class="topbar">
+                <div class="search-bar">
+                    <span class="material-symbols-outlined">search</span>
+                    <input type="text" placeholder="Search tasks, volunteers, or reports...">
+                </div>
+                <div class="topbar-actions">
+                    <button class="icon-btn" id="theme-toggle"><span class="material-symbols-outlined">dark_mode</span></button>
+                    <div class="notification-wrapper">
+                        <button class="icon-btn" id="btn-notifications">
+                            <span class="material-symbols-outlined">notifications</span>
+                            <span class="badge">3</span>
+                        </button>
+                        <div class="dropdown notification-dropdown hidden" id="notification-list">
+                            <div class="dropdown-header">Recent Alerts</div>
+                            <div class="dropdown-content">
+                                <div class="notif-item"><strong>New Survey:</strong> Downtown flood report...</div>
+                                <div class="notif-item"><strong>Critical:</strong> Shelter at 95% capacity...</div>
+                                <div class="notif-item"><strong>Volunteer:</strong> Sarah Chen assigned...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="icon-btn"><span class="material-symbols-outlined">settings</span></button>
+                </div>
+            </header>
+
+            <!-- View Container -->
+            <div id="view-container" class="view-container">
+                <!-- Views will be dynamically injected here via app.js -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Templates -->
+    
+    <!-- Dashboard Template -->
+    <template id="tpl-dashboard">
+        <div class="view dashboard-view">
+            <div class="page-header">
+                <h2>Overview</h2>
+                <p>Real-time community needs and resource availability.</p>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon urgent"><span class="material-symbols-outlined">emergency</span></div>
+                    <div class="metric-info">
+                        <h3>Critical Tasks</h3>
+                        <p class="metric-value" id="dash-urgent">0</p>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon active"><span class="material-symbols-outlined">group</span></div>
+                    <div class="metric-info">
+                        <h3>Active Volunteers</h3>
+                        <p class="metric-value" id="dash-volunteers">0</p>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon success"><span class="material-symbols-outlined">task_alt</span></div>
+                    <div class="metric-info">
+                        <h3>Needs Met (This Week)</h3>
+                        <p class="metric-value" id="dash-met">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                <div class="urgent-needs-section">
+                    <h3>Urgent Action Required</h3>
+                    <div class="task-list" id="urgent-task-list">
+                        <!-- Tasks injected here -->
+                    </div>
+                </div>
+                <div class="map-preview-section glass-panel" style="position: relative; overflow: hidden; min-height: 300px;">
+                    <div id="interactive-map" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></div>
+                    <div class="map-overlay" style="position: relative; z-index: 2; pointer-events: none;">
+                        <h3 style="pointer-events: auto;">Live Hotspots</h3>
+                        <p style="pointer-events: auto;">Most activity clustered in Downtown and Southside areas. <strong>Downtown Shelter</strong> is currently at 85% capacity.</p>
+                        <div style="display: flex; gap: 8px; margin-top: 12px; pointer-events: auto;">
+                            <button class="btn btn-primary" onclick="app.switchView('matcher')">Open Matcher</button>
+                            <button class="btn btn-secondary" onclick="app.switchView('facilities')">View Facilities</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Smart Matcher Template -->
+    <template id="tpl-matcher">
+        <div class="view matcher-view">
+            <div class="page-header">
+                <h2>Smart Matcher Engine</h2>
+                <p>AI-driven allocation connecting volunteers to high-priority tasks based on skills and proximity.</p>
+            </div>
+
+            <div class="matcher-layout">
+                <div class="task-selection-panel glass-panel">
+                    <h3>Unassigned Tasks</h3>
+                    <div class="filter-bar">
+                        <select id="filter-urgency">
+                            <option value="all">All Urgency</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="matcher-task-list" id="matcher-task-list">
+                        <!-- Tasks to match -->
+                    </div>
+                </div>
+
+                <div class="match-results-panel">
+                    <div class="empty-state" id="matcher-empty">
+                        <span class="material-symbols-outlined empty-icon">hub</span>
+                        <h3>Select a task to find matches</h3>
+                        <p>The engine will analyze proximity, skills, and availability.</p>
+                    </div>
+                    
+                    <div class="active-match-state hidden" id="matcher-active">
+                        <div class="selected-task-header glass-panel" id="selected-task-details">
+                            <!-- Selected task details -->
+                        </div>
+                        
+                        <div class="recommended-volunteers">
+                            <h3>Top Recommended Volunteers</h3>
+                            <div class="volunteer-list" id="volunteer-match-list">
+                                <!-- Matched volunteers -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Data Entry Template -->
+    <template id="tpl-data-entry">
+        <div class="view data-entry-view">
+            <div class="page-header">
+                <h2>Ingest Field Data</h2>
+                <p>Powered by <strong>Google Vision AI</strong> + <strong>Gemini 1.5</strong> — digitize paper surveys in seconds.</p>
+            </div>
+
+            <!-- Google AI Pipeline Visualization -->
+            <div class="ai-pipeline glass-panel" style="display:flex; align-items:center; justify-content:center; gap:0; padding:20px 32px; margin-bottom:24px;">
+                <div class="pipeline-step active" id="step-1">
+                    <div class="pipeline-icon" style="background:rgba(79,70,229,0.2); color:var(--accent-primary);">
+                        <span class="material-symbols-outlined">photo_camera</span>
+                    </div>
+                    <div>
+                        <div style="font-weight:700; font-size:13px;">Step 1</div>
+                        <div style="font-size:12px; color:var(--text-secondary);">Vision AI OCR</div>
+                    </div>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step" id="step-2">
+                    <div class="pipeline-icon" style="background:rgba(16,185,129,0.2); color:var(--success);">
+                        <span class="material-symbols-outlined">psychology</span>
+                    </div>
+                    <div>
+                        <div style="font-weight:700; font-size:13px;">Step 2</div>
+                        <div style="font-size:12px; color:var(--text-secondary);">Gemini Analysis</div>
+                    </div>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step" id="step-3">
+                    <div class="pipeline-icon" style="background:rgba(245,158,11,0.2); color:var(--warning);">
+                        <span class="material-symbols-outlined">bolt</span>
+                    </div>
+                    <div>
+                        <div style="font-weight:700; font-size:13px;">Step 3</div>
+                        <div style="font-size:12px; color:var(--text-secondary);">Need Score</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-container glass-panel">
+
+                <!-- Step 1: Vision AI Upload -->
+                <div class="ai-section" style="margin-bottom:32px;">
+                    <h3 style="font-size:16px; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+                        <span style="background:var(--accent-primary); color:white; width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">1</span>
+                        Scan Paper Survey (Google Vision AI)
+                    </h3>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">Upload a photo of a handwritten or printed survey. Vision AI will extract the text automatically.</p>
+
+                    <div id="vision-drop-zone" style="border:2px dashed var(--accent-primary); border-radius:12px; padding:32px; text-align:center; cursor:pointer; transition:all 0.3s; background:rgba(79,70,229,0.05);" 
+                         onclick="document.getElementById('vision-file-input').click()"
+                         ondragover="event.preventDefault(); this.style.background='rgba(79,70,229,0.15)'"
+                         ondragleave="this.style.background='rgba(79,70,229,0.05)'"
+                         ondrop="app.handleImageDrop(event)">
+                        <span class="material-symbols-outlined" style="font-size:48px; color:var(--accent-primary); opacity:0.6;">upload_file</span>
+                        <p style="margin:8px 0 4px; font-weight:600;">Drop survey image here or click to upload</p>
+                        <p style="font-size:12px; color:var(--text-secondary);">Supports JPG, PNG, PDF screenshots</p>
+                    </div>
+                    <input type="file" id="vision-file-input" accept="image/*" style="display:none" onchange="app.handleImageUpload(event)">
+                    
+                    <div id="vision-preview" style="display:none; margin-top:12px; display:flex; gap:12px; align-items:flex-start;">
+                        <img id="vision-preview-img" style="width:80px; height:80px; object-fit:cover; border-radius:8px; border:1px solid var(--border-color);" alt="Preview">
+                        <div style="flex:1;">
+                            <div id="vision-status" style="font-size:13px; color:var(--accent-primary); font-weight:600;">Scanning with Vision AI...</div>
+                            <div id="vision-progress" style="height:4px; background:var(--border-color); border-radius:2px; margin-top:8px; overflow:hidden;">
+                                <div style="height:100%; background:var(--accent-primary); width:0%; transition:width 1.5s ease;" id="vision-progress-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="vision-api-section" style="display:none; margin-top:12px;">
+                        <label style="font-size:13px; color:var(--text-secondary);">Google Cloud Vision API Key (optional — leave blank for demo mode):</label>
+                        <input type="password" id="vision-api-key" placeholder="AIza...your Vision API key..." style="margin-top:6px;">
+                    </div>
+                    <button type="button" class="btn btn-secondary" style="margin-top:12px; font-size:13px;" onclick="document.getElementById('vision-api-section').style.display = document.getElementById('vision-api-section').style.display === 'none' ? 'block' : 'none'">
+                        <span class="material-symbols-outlined" style="font-size:15px; vertical-align:middle; margin-right:4px;">key</span>Configure API Keys
+                    </button>
+                </div>
+
+                <!-- Step 2: Gemini AI Analysis -->
+                <div class="ai-section" style="margin-bottom:32px; padding-top:24px; border-top:1px solid var(--border-color);">
+                    <h3 style="font-size:16px; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+                        <span style="background:var(--success); color:white; width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">2</span>
+                        Analyze with Gemini 1.5 Flash
+                    </h3>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">Or paste raw text from any report directly below:</p>
+                    <textarea id="ai-raw-text" rows="4" placeholder="e.g. In Downtown area, 50 families need urgent food supply due to flooding. They need people with driving skills and logistics experience..." style="margin-bottom:12px;"></textarea>
+                    <div id="ai-key-section" style="margin-bottom:12px; display:none;">
+                        <label style="font-size:13px;">Google AI (Gemini) API Key:</label>
+                        <input type="password" id="gemini-api-key" placeholder="Paste your Gemini API key..." style="margin-top:6px;">
+                    </div>
+                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-primary" id="btn-ai-analyze">
+                            <span class="material-symbols-outlined" style="vertical-align:middle; margin-right:6px; font-size:16px;">auto_awesome</span>Analyze with Gemini
+                        </button>
+                        <button type="button" class="btn btn-secondary" style="font-size:13px;" onclick="document.getElementById('ai-key-section').style.display = document.getElementById('ai-key-section').style.display==='none' ? 'block' : 'none'">
+                            <span class="material-symbols-outlined" style="font-size:15px; vertical-align:middle; margin-right:4px;">key</span>Set API Key
+                        </button>
+                    </div>
+                    <div id="ai-loader" class="hidden" style="margin-top:12px; font-size:14px; color:var(--accent-primary); display:flex; align-items:center; gap:8px;">
+                        <span class="material-symbols-outlined" style="animation: spin 1s linear infinite; font-size:20px;">progress_activity</span>
+                        Analyzing with Gemini...
+                    </div>
+                    <div id="ai-reasoning-box" style="display:none; margin-top:16px; padding:12px 16px; background:rgba(79,70,229,0.1); border-left:3px solid var(--accent-primary); border-radius:0 8px 8px 0; font-size:13px;"></div>
+                </div>
+
+                <!-- Step 3: Need Score Display -->
+                <div id="need-score-section" style="display:none; margin-bottom:32px; padding:20px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3); border-radius:12px;">
+                    <h3 style="font-size:16px; margin-bottom:12px; display:flex; align-items:center; gap:8px; color:var(--warning);">
+                        <span class="material-symbols-outlined">bolt</span>
+                        AI Need Score
+                    </h3>
+                    <div style="display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
+                        <div id="need-score-circle" style="width:80px; height:80px; border-radius:50%; border:4px solid var(--warning); display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:800; color:var(--warning); flex-shrink:0;">0</div>
+                        <div style="flex:1; min-width:200px;">
+                            <div id="need-score-breakdown" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:12px;"></div>
+                        </div>
+                        <div id="need-score-summary" style="font-size:13px; color:var(--text-secondary); font-style:italic; flex:2; min-width:200px;"></div>
+                    </div>
+                </div>
+
+                <!-- Manual Form -->
+                <div style="padding-top:24px; border-top:1px solid var(--border-color);">
+                    <h3 style="font-size:16px; margin-bottom:16px;">Task Details (Auto-filled or Manual)</h3>
+                    <form id="ingest-form">
+                        <div class="form-group">
+                            <label>Report Title / Need Summary</label>
+                            <input type="text" required placeholder="e.g. Emergency food distribution needed">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select required>
+                                    <option value="">Select Category</option>
+                                    <option value="Food Security">Food Security</option>
+                                    <option value="Medical Assistance">Medical Assistance</option>
+                                    <option value="Emergency Shelter">Emergency Shelter</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Logistics/Transport">Logistics/Transport</option>
+                                    <option value="Water & Sanitation">Water & Sanitation</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Urgency Level</label>
+                                <select required>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="critical">Critical</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Required Skills (comma separated)</label>
+                            <input type="text" placeholder="e.g. First Aid, Driving, Translation" id="skills-input">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Location Area</label>
+                                <input type="text" required placeholder="e.g. Downtown, Sector 4">
+                            </div>
+                            <div class="form-group">
+                                <label>People Affected (est.)</label>
+                                <input type="number" placeholder="e.g. 50" id="affected-count" min="0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Detailed Description</label>
+                            <textarea rows="4" placeholder="Enter full details from the paper report..."></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('ingest-form').reset()">Clear</button>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="material-symbols-outlined" style="vertical-align:middle; margin-right:4px; font-size:16px;">send</span>Submit to System
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Facilities Template -->
+    <template id="tpl-facilities">
+        <div class="view facilities-view">
+            <div class="page-header">
+                <h2>Infrastructure & Shelters</h2>
+                <p>Monitor status, occupancy, and immediate needs of community facilities.</p>
+            </div>
+
+            <div class="facilities-grid" id="facilities-grid">
+                <!-- Facilities injected here -->
+            </div>
+        </div>
+    </template>
+
+    <!-- Analytics Template -->
+    <template id="tpl-analytics">
+        <div class="view analytics-view">
+            <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h2>Impact Analytics</h2>
+                    <p>Data-driven insights on community needs and volunteer effectiveness.</p>
+                </div>
+                <div class="export-actions">
+                    <button class="btn btn-secondary" onclick="app.exportToCSV()"><span class="material-symbols-outlined" style="font-size:16px; margin-right:8px; vertical-align:middle;">download</span>Export CSV</button>
+                    <button class="btn btn-primary" onclick="window.print()"><span class="material-symbols-outlined" style="font-size:16px; margin-right:8px; vertical-align:middle;">picture_as_pdf</span>Save Report</button>
+                </div>
+            </div>
+
+            <div class="analytics-layout">
+                <div class="chart-section glass-panel">
+                    <h3>Needs by Category</h3>
+                    <div id="category-chart-container" class="chart-container bar-chart-container">
+                        <!-- Bars injected here -->
+                    </div>
+                </div>
+
+                <div class="chart-section glass-panel">
+                    <h3>Weekly Resolution Rate (%)</h3>
+                    <div id="weekly-chart-container" class="chart-container line-chart-container">
+                        <!-- Sparklines injected here -->
+                    </div>
+                </div>
+
+                <div class="stats-section glass-panel">
+                    <h3>Hotspot Performance</h3>
+                    <div id="area-stats-list" class="area-stats-list">
+                        <!-- Areas injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="js/mockData.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/matchingEngine.js"></script>
+    <script src="js/visionService.js"></script>
+    <script src="js/aiService.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
