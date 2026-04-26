@@ -218,71 +218,180 @@
         <div class="view data-entry-view">
             <div class="page-header">
                 <h2>Ingest Field Data</h2>
-                <p>Digitize paper surveys and field reports to update community needs.</p>
+                <p>Powered by <strong>Google Vision AI</strong> + <strong>Gemini 1.5</strong> — digitize paper surveys in seconds.</p>
+            </div>
+
+            <!-- Google AI Pipeline Visualization -->
+            <div class="ai-pipeline glass-panel" style="display:flex; align-items:center; justify-content:center; gap:0; padding:20px 32px; margin-bottom:24px;">
+                <div class="pipeline-step active" id="step-1">
+                    <div class="pipeline-icon" style="background:rgba(79,70,229,0.2); color:var(--accent-primary);">
+                        <span class="material-symbols-outlined">photo_camera</span>
+                    </div>
+                    <div>
+                        <div style="font-weight:700; font-size:13px;">Step 1</div>
+                        <div style="font-size:12px; color:var(--text-secondary);">Vision AI OCR</div>
+                    </div>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step" id="step-2">
+                    <div class="pipeline-icon" style="background:rgba(16,185,129,0.2); color:var(--success);">
+                        <span class="material-symbols-outlined">psychology</span>
+                    </div>
+                    <div>
+                        <div style="font-weight:700; font-size:13px;">Step 2</div>
+                        <div style="font-size:12px; color:var(--text-secondary);">Gemini Analysis</div>
+                    </div>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step" id="step-3">
+                    <div class="pipeline-icon" style="background:rgba(245,158,11,0.2); color:var(--warning);">
+                        <span class="material-symbols-outlined">bolt</span>
+                    </div>
+                    <div>
+                        <div style="font-weight:700; font-size:13px;">Step 3</div>
+                        <div style="font-size:12px; color:var(--text-secondary);">Need Score</div>
+                    </div>
+                </div>
             </div>
 
             <div class="form-container glass-panel">
-                <div class="ai-assist-box" style="margin-bottom: 32px; padding: 24px; background: rgba(79, 70, 229, 0.1); border: 1px dashed var(--accent-primary); border-radius: 12px;">
-                    <h3 style="font-size: 16px; margin-bottom: 8px;"><span class="material-symbols-outlined" style="vertical-align:middle; margin-right:8px; color:var(--accent-primary)">auto_awesome</span>AI-Assisted Entry</h3>
-                    <p style="font-size: 14px; color:var(--text-secondary); margin-bottom: 16px;">Paste the raw text from the paper survey here. Google Gemini will automatically extract the details.</p>
-                    <textarea id="ai-raw-text" rows="3" placeholder="e.g. In Downtown area, 50 families need urgent food supply due to flooding. They need people with driving skills and logistics experience..." style="margin-bottom: 16px;"></textarea>
-                    <div id="ai-key-section" style="margin-bottom: 16px; display:none;">
-                        <label>Enter Google AI API Key:</label>
-                        <input type="password" id="gemini-api-key" placeholder="Paste your API key here...">
+
+                <!-- Step 1: Vision AI Upload -->
+                <div class="ai-section" style="margin-bottom:32px;">
+                    <h3 style="font-size:16px; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+                        <span style="background:var(--accent-primary); color:white; width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">1</span>
+                        Scan Paper Survey (Google Vision AI)
+                    </h3>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">Upload a photo of a handwritten or printed survey. Vision AI will extract the text automatically.</p>
+
+                    <div id="vision-drop-zone" style="border:2px dashed var(--accent-primary); border-radius:12px; padding:32px; text-align:center; cursor:pointer; transition:all 0.3s; background:rgba(79,70,229,0.05);" 
+                         onclick="document.getElementById('vision-file-input').click()"
+                         ondragover="event.preventDefault(); this.style.background='rgba(79,70,229,0.15)'"
+                         ondragleave="this.style.background='rgba(79,70,229,0.05)'"
+                         ondrop="app.handleImageDrop(event)">
+                        <span class="material-symbols-outlined" style="font-size:48px; color:var(--accent-primary); opacity:0.6;">upload_file</span>
+                        <p style="margin:8px 0 4px; font-weight:600;">Drop survey image here or click to upload</p>
+                        <p style="font-size:12px; color:var(--text-secondary);">Supports JPG, PNG, PDF screenshots</p>
                     </div>
-                    <button type="button" class="btn btn-primary" id="btn-ai-analyze">Analyze Survey with AI</button>
-                    <div id="ai-loader" class="hidden" style="margin-top: 12px; font-size: 14px; color: var(--accent-primary);">Analyzing with Gemini...</div>
+                    <input type="file" id="vision-file-input" accept="image/*" style="display:none" onchange="app.handleImageUpload(event)">
+                    
+                    <div id="vision-preview" style="display:none; margin-top:12px; display:flex; gap:12px; align-items:flex-start;">
+                        <img id="vision-preview-img" style="width:80px; height:80px; object-fit:cover; border-radius:8px; border:1px solid var(--border-color);" alt="Preview">
+                        <div style="flex:1;">
+                            <div id="vision-status" style="font-size:13px; color:var(--accent-primary); font-weight:600;">Scanning with Vision AI...</div>
+                            <div id="vision-progress" style="height:4px; background:var(--border-color); border-radius:2px; margin-top:8px; overflow:hidden;">
+                                <div style="height:100%; background:var(--accent-primary); width:0%; transition:width 1.5s ease;" id="vision-progress-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="vision-api-section" style="display:none; margin-top:12px;">
+                        <label style="font-size:13px; color:var(--text-secondary);">Google Cloud Vision API Key (optional — leave blank for demo mode):</label>
+                        <input type="password" id="vision-api-key" placeholder="AIza...your Vision API key..." style="margin-top:6px;">
+                    </div>
+                    <button type="button" class="btn btn-secondary" style="margin-top:12px; font-size:13px;" onclick="document.getElementById('vision-api-section').style.display = document.getElementById('vision-api-section').style.display === 'none' ? 'block' : 'none'">
+                        <span class="material-symbols-outlined" style="font-size:15px; vertical-align:middle; margin-right:4px;">key</span>Configure API Keys
+                    </button>
                 </div>
 
-                <form id="ingest-form">
-                    <div class="form-group">
-                        <label>Report Title / Need Summary</label>
-                        <input type="text" required placeholder="e.g. Emergency food distribution needed">
+                <!-- Step 2: Gemini AI Analysis -->
+                <div class="ai-section" style="margin-bottom:32px; padding-top:24px; border-top:1px solid var(--border-color);">
+                    <h3 style="font-size:16px; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+                        <span style="background:var(--success); color:white; width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">2</span>
+                        Analyze with Gemini 1.5 Flash
+                    </h3>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">Or paste raw text from any report directly below:</p>
+                    <textarea id="ai-raw-text" rows="4" placeholder="e.g. In Downtown area, 50 families need urgent food supply due to flooding. They need people with driving skills and logistics experience..." style="margin-bottom:12px;"></textarea>
+                    <div id="ai-key-section" style="margin-bottom:12px; display:none;">
+                        <label style="font-size:13px;">Google AI (Gemini) API Key:</label>
+                        <input type="password" id="gemini-api-key" placeholder="Paste your Gemini API key..." style="margin-top:6px;">
                     </div>
-                    
-                    <div class="form-row">
+                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-primary" id="btn-ai-analyze">
+                            <span class="material-symbols-outlined" style="vertical-align:middle; margin-right:6px; font-size:16px;">auto_awesome</span>Analyze with Gemini
+                        </button>
+                        <button type="button" class="btn btn-secondary" style="font-size:13px;" onclick="document.getElementById('ai-key-section').style.display = document.getElementById('ai-key-section').style.display==='none' ? 'block' : 'none'">
+                            <span class="material-symbols-outlined" style="font-size:15px; vertical-align:middle; margin-right:4px;">key</span>Set API Key
+                        </button>
+                    </div>
+                    <div id="ai-loader" class="hidden" style="margin-top:12px; font-size:14px; color:var(--accent-primary); display:flex; align-items:center; gap:8px;">
+                        <span class="material-symbols-outlined" style="animation: spin 1s linear infinite; font-size:20px;">progress_activity</span>
+                        Analyzing with Gemini...
+                    </div>
+                    <div id="ai-reasoning-box" style="display:none; margin-top:16px; padding:12px 16px; background:rgba(79,70,229,0.1); border-left:3px solid var(--accent-primary); border-radius:0 8px 8px 0; font-size:13px;"></div>
+                </div>
+
+                <!-- Step 3: Need Score Display -->
+                <div id="need-score-section" style="display:none; margin-bottom:32px; padding:20px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3); border-radius:12px;">
+                    <h3 style="font-size:16px; margin-bottom:12px; display:flex; align-items:center; gap:8px; color:var(--warning);">
+                        <span class="material-symbols-outlined">bolt</span>
+                        AI Need Score
+                    </h3>
+                    <div style="display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
+                        <div id="need-score-circle" style="width:80px; height:80px; border-radius:50%; border:4px solid var(--warning); display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:800; color:var(--warning); flex-shrink:0;">0</div>
+                        <div style="flex:1; min-width:200px;">
+                            <div id="need-score-breakdown" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:12px;"></div>
+                        </div>
+                        <div id="need-score-summary" style="font-size:13px; color:var(--text-secondary); font-style:italic; flex:2; min-width:200px;"></div>
+                    </div>
+                </div>
+
+                <!-- Manual Form -->
+                <div style="padding-top:24px; border-top:1px solid var(--border-color);">
+                    <h3 style="font-size:16px; margin-bottom:16px;">Task Details (Auto-filled or Manual)</h3>
+                    <form id="ingest-form">
                         <div class="form-group">
-                            <label>Category</label>
-                            <select required>
-                                <option value="">Select Category</option>
-                                <option value="food">Food Security</option>
-                                <option value="medical">Medical Assistance</option>
-                                <option value="shelter">Shelter/Housing</option>
-                                <option value="education">Education</option>
-                                <option value="logistics">Transport/Logistics</option>
-                            </select>
+                            <label>Report Title / Need Summary</label>
+                            <input type="text" required placeholder="e.g. Emergency food distribution needed">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select required>
+                                    <option value="">Select Category</option>
+                                    <option value="Food Security">Food Security</option>
+                                    <option value="Medical Assistance">Medical Assistance</option>
+                                    <option value="Emergency Shelter">Emergency Shelter</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Logistics/Transport">Logistics/Transport</option>
+                                    <option value="Water & Sanitation">Water & Sanitation</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Urgency Level</label>
+                                <select required>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="critical">Critical</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label>Urgency Level</label>
-                            <select required>
-                                <option value="low">Low</option>
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
-                                <option value="critical">Critical</option>
-                            </select>
+                            <label>Required Skills (comma separated)</label>
+                            <input type="text" placeholder="e.g. First Aid, Driving, Translation" id="skills-input">
                         </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Required Skills (comma separated)</label>
-                        <input type="text" placeholder="e.g. First Aid, Driving, Translation">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Location Area</label>
-                        <input type="text" required placeholder="e.g. Downtown, Sector 4">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Detailed Description</label>
-                        <textarea rows="4" placeholder="Enter full details from the paper report..."></textarea>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary">Clear</button>
-                        <button type="submit" class="btn btn-primary">Submit to System</button>
-                    </div>
-                </form>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Location Area</label>
+                                <input type="text" required placeholder="e.g. Downtown, Sector 4">
+                            </div>
+                            <div class="form-group">
+                                <label>People Affected (est.)</label>
+                                <input type="number" placeholder="e.g. 50" id="affected-count" min="0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Detailed Description</label>
+                            <textarea rows="4" placeholder="Enter full details from the paper report..."></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('ingest-form').reset()">Clear</button>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="material-symbols-outlined" style="vertical-align:middle; margin-right:4px; font-size:16px;">send</span>Submit to System
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </template>
@@ -343,6 +452,7 @@
     <script src="js/mockData.js"></script>
     <script src="js/db.js"></script>
     <script src="js/matchingEngine.js"></script>
+    <script src="js/visionService.js"></script>
     <script src="js/aiService.js"></script>
     <script src="js/app.js"></script>
 </body>

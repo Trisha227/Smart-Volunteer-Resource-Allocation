@@ -4,6 +4,7 @@ class App {
         this.volunteers = [...mockVolunteers];
         this.matcher = new MatchingEngine(this.volunteers);
         this.ai = new AIService();
+        this.vision = new VisionService();
         this.db = new DBService();
         this.map = null;
         
@@ -355,52 +356,60 @@ class App {
     initDataEntry() {
         const form = document.getElementById('ingest-form');
         const aiBtn = document.getElementById('btn-ai-analyze');
-        const keySection = document.getElementById('ai-key-section');
         const loader = document.getElementById('ai-loader');
 
+        // Wire up Vision AI scan button (triggered by upload)
+        // Wire up Gemini Analyze button
         if (aiBtn) {
             aiBtn.onclick = async () => {
-                const rawText = document.getElementById('ai-raw-text').value;
-                const apiKey = document.getElementById('gemini-api-key').value;
-
-                if (!apiKey) {
-                    keySection.style.display = 'block';
-                    alert('Please provide your Google AI API Key to use this feature.');
-                    return;
-                }
+                const rawText = document.getElementById('ai-raw-text').value.trim();
+                const apiKey = document.getElementById('gemini-api-key')?.value.trim();
 
                 if (!rawText) {
-                    alert('Please enter some text to analyze.');
+                    alert('Please enter survey text or upload an image first.');
                     return;
                 }
 
-                this.ai.setApiKey(apiKey);
+                if (apiKey) this.ai.setApiKey(apiKey);
+
+                // Activate Step 2
+                document.getElementById('step-2')?.classList.add('active');
                 loader.classList.remove('hidden');
                 aiBtn.disabled = true;
 
                 try {
                     const result = await this.ai.analyzeSurvey(rawText);
                     if (result) {
-                        // Populate form fields
-                        form.querySelector('input[placeholder*="e.g. Emergency"]').value = result.title || '';
-                        form.querySelector('select').value = result.category ? result.category.toLowerCase().split(' ')[0] : '';
-                        form.querySelectorAll('select')[1].value = result.urgency || 'low';
-                        form.querySelector('input[placeholder*="Skills"]').value = result.skills ? result.skills.join(', ') : '';
-                        form.querySelector('input[placeholder*="Location"]').value = result.location || '';
+                        // Auto-fill the form
+                        form.querySelector('input[type="text"]').value = result.title || '';
+                        const selects = form.querySelectorAll('select');
+                        if (selects[0]) selects[0].value = result.category || '';
+                        if (selects[1]) selects[1].value = result.urgency?.toLowerCase() || 'medium';
+                        const skillsInput = document.getElementById('skills-input');
+                        if (skillsInput) skillsInput.value = result.skills ? result.skills.join(', ') : '';
+                        form.querySelector('input[placeholder*="Sector"]').value = result.location || '';
+                        const affectedInput = document.getElementById('affected-count');
+                        if (affectedInput) affectedInput.value = result.affectedCount || '';
                         form.querySelector('textarea').value = result.description || '';
-                        
+
                         // Show AI Reasoning
-                        if (result.reasoning) {
-                            const reasonEl = document.createElement('div');
-                            reasonEl.style.cssText = 'margin-top:16px; padding:12px; background:rgba(255,255,255,0.05); border-radius:8px; font-size:13px; font-style:italic; border-left:3px solid var(--accent-primary);';
-                            reasonEl.innerHTML = `<strong>AI Reasoning:</strong> ${result.reasoning}`;
-                            document.getElementById('ai-raw-text').parentNode.appendChild(reasonEl);
+                        const reasonBox = document.getElementById('ai-reasoning-box');
+                        if (reasonBox && result.reasoning) {
+                            reasonBox.style.display = 'block';
+                            reasonBox.innerHTML = `<strong>🧠 Gemini Reasoning:</strong> ${result.reasoning} <em style="color:var(--text-secondary); font-size:11px;">(Confidence: ${result.confidence || '?'}%)</em>`;
                         }
 
-                        alert('AI Analysis successful! The form has been populated.');
+                        // Step 3: Calculate Need Score
+                        document.getElementById('step-3')?.classList.add('active');
+                        await this.displayNeedScore(result);
                     }
                 } catch (err) {
-                    alert('AI Analysis failed: ' + err.message);
+                    if (err.message.includes('API Key missing')) {
+                        document.getElementById('ai-key-section').style.display = 'block';
+                        alert('Please set your Google AI (Gemini) API Key to use this feature.');
+                    } else {
+                        alert('AI Analysis failed: ' + err.message);
+                    }
                 } finally {
                     loader.classList.add('hidden');
                     aiBtn.disabled = false;
@@ -411,36 +420,120 @@ class App {
         if (form) {
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const data = new FormData(form);
-
-                // Build new task from form fields
                 const newTask = {
                     id: 't' + Date.now(),
-                    title: form.querySelector('input[placeholder*="e.g. Emergency"]').value || 'New Task',
-                    category: form.querySelector('select').value || 'General',
+                    title: form.querySelector('input[type="text"]').value || 'New Task',
+                    category: form.querySelectorAll('select')[0]?.value || 'General',
                     urgency: form.querySelectorAll('select')[1]?.value || 'medium',
-                    skills: (form.querySelector('input[placeholder*="Skills"]').value || '').split(',').map(s => s.trim()).filter(Boolean),
-                    location: form.querySelector('input[placeholder*="Location"]').value || 'Unknown',
-                    description: form.querySelector('textarea').value || '',
+                    skills: (document.getElementById('skills-input')?.value || '').split(',').map(s => s.trim()).filter(Boolean),
+                    location: form.querySelector('input[placeholder*="Sector"]')?.value || 'Unknown',
+                    description: form.querySelector('textarea')?.value || '',
+                    affectedCount: parseInt(document.getElementById('affected-count')?.value) || 0,
                     timestamp: 'Just now',
                     status: 'Pending'
                 };
-
-                // Add to live task list
                 this.tasks.unshift(newTask);
 
-                // Animate submission success
                 const btn = form.querySelector('button[type="submit"]');
-                const originalText = btn.textContent;
                 btn.style.background = 'var(--success)';
-                btn.innerHTML = '<span class="material-symbols-outlined" style="vertical-align:middle; margin-right:4px;">check_circle</span> Ingested Successfully!';
-
-                setTimeout(() => {
-                    form.reset();
-                    btn.style.background = '';
-                    btn.textContent = originalText;
-                }, 2000);
+                btn.innerHTML = '<span class="material-symbols-outlined" style="vertical-align:middle;">check_circle</span> Task Added!';
+                setTimeout(() => { form.reset(); btn.style.background=''; btn.innerHTML='<span class="material-symbols-outlined" style="vertical-align:middle; margin-right:4px; font-size:16px;">send</span>Submit to System'; }, 2500);
             });
+        }
+    }
+
+    async displayNeedScore(taskData) {
+        const section = document.getElementById('need-score-section');
+        if (!section) return;
+        section.style.display = 'block';
+
+        const scoreEl = document.getElementById('need-score-circle');
+        const breakdownEl = document.getElementById('need-score-breakdown');
+        const summaryEl = document.getElementById('need-score-summary');
+
+        scoreEl.textContent = '...';
+        breakdownEl.innerHTML = '<span style="color:var(--text-secondary)">Calculating...</span>';
+
+        const scoreData = await this.ai.calculateNeedScore(taskData);
+        const score = scoreData.needScore;
+        const color = score >= 75 ? 'var(--urgent)' : score >= 50 ? 'var(--warning)' : 'var(--success)';
+
+        scoreEl.textContent = score;
+        scoreEl.style.borderColor = color;
+        scoreEl.style.color = color;
+
+        const bd = scoreData.breakdown;
+        breakdownEl.innerHTML = `
+            <div>⚡ Severity: <strong>${bd.severity}/25</strong></div>
+            <div>👥 Scale: <strong>${bd.scale}/25</strong></div>
+            <div>⏱️ Timeliness: <strong>${bd.timeliness}/25</strong></div>
+            <div>📦 Resource Gap: <strong>${bd.resourceGap}/25</strong></div>
+        `;
+        if (summaryEl) summaryEl.textContent = scoreData.summary || '';
+    }
+
+    // Vision AI image handlers
+    async handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        await this.processImage(file);
+    }
+
+    async handleImageDrop(event) {
+        event.preventDefault();
+        const file = event.dataTransfer.files[0];
+        if (!file) return;
+        await this.processImage(file);
+    }
+
+    async processImage(file) {
+        // Show preview
+        const preview = document.getElementById('vision-preview');
+        const previewImg = document.getElementById('vision-preview-img');
+        const statusEl = document.getElementById('vision-status');
+        const progressBar = document.getElementById('vision-progress-bar');
+        const dropZone = document.getElementById('vision-drop-zone');
+
+        if (!preview) return;
+        preview.style.display = 'flex';
+        if (dropZone) dropZone.style.display = 'none';
+
+        // Show image preview
+        const objectUrl = URL.createObjectURL(file);
+        if (previewImg) previewImg.src = objectUrl;
+
+        // Animate progress bar
+        if (progressBar) {
+            progressBar.style.width = '0%';
+            setTimeout(() => progressBar.style.width = '70%', 100);
+        }
+        if (statusEl) statusEl.textContent = '🔍 Scanning with Google Vision AI...';
+
+        // Activate Step 1 pipeline
+        document.getElementById('step-1')?.classList.add('active');
+
+        // Set Vision API key if entered
+        const visionKey = document.getElementById('vision-api-key')?.value.trim();
+        if (visionKey) this.vision.setApiKey(visionKey);
+
+        try {
+            const extractedText = await this.vision.extractTextFromImage(file);
+
+            if (progressBar) progressBar.style.width = '100%';
+            if (statusEl) statusEl.innerHTML = `<span style="color:var(--success)">✓ Text extracted successfully!</span>`;
+
+            // Populate Gemini text area
+            const textArea = document.getElementById('ai-raw-text');
+            if (textArea) {
+                textArea.value = extractedText;
+                textArea.style.borderColor = 'var(--success)';
+            }
+
+            // Auto-trigger Gemini analysis
+            setTimeout(() => document.getElementById('btn-ai-analyze')?.click(), 500);
+
+        } catch (err) {
+            if (statusEl) statusEl.innerHTML = `<span style="color:var(--urgent)">✗ ${err.message}</span>`;
         }
     }
 
