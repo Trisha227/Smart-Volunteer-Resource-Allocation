@@ -103,15 +103,16 @@ class App {
             attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
         }).addTo(this.map);
 
-        // Add markers for Facilities
+        // Add markers for Facilities (using facility.location correctly)
+        const facilityCoords = {
+            'Downtown': [40.7128, -74.0060],
+            'Sector 4': [40.7200, -73.9900],
+            'West End': [40.7050, -74.0150]
+        };
         mockFacilities.forEach(facility => {
-            // Simulated coords based on area
-            const coords = facility.area === 'Downtown' ? [40.7128, -74.0060] : 
-                          facility.area === 'Sector 4' ? [40.7200, -73.9900] : 
-                          [40.7050, -74.0150];
-            
+            const coords = facilityCoords[facility.location] || [40.7128 + (Math.random() * 0.01), -74.0060 + (Math.random() * 0.01)];
             const marker = L.marker(coords).addTo(this.map);
-            marker.bindPopup(`<b>${facility.name}</b><br>Occupancy: ${facility.occupancy}%`);
+            marker.bindPopup(`<b>${facility.name}</b><br>Type: ${facility.type}<br>Occupancy: ${facility.occupancy}/${facility.capacity}<br>Status: ${facility.status}`);
         });
 
         // Add circle hotspots for urgent tasks
@@ -129,10 +130,11 @@ class App {
     // --- Dashboard View ---
     renderDashboard() {
         const urgentTasks = this.tasks.filter(t => t.urgency === 'critical' || t.urgency === 'high');
+        const resolvedTasks = this.tasks.filter(t => t.status === 'Resolved');
         
         document.getElementById('dash-urgent').textContent = urgentTasks.length;
         document.getElementById('dash-volunteers').textContent = this.volunteers.length;
-        document.getElementById('dash-met').textContent = '24'; // Mocked stat
+        document.getElementById('dash-met').textContent = resolvedTasks.length + 24; // 24 = historical baseline
 
         const listContainer = document.getElementById('urgent-task-list');
         listContainer.innerHTML = '';
@@ -299,48 +301,50 @@ class App {
             return;
         }
 
-        matches.forEach(({volunteer, score, reasons}, index) => {
-            // Stagger animation delay
+        matches.forEach((match, index) => {
+            const { volunteer, score, reasons, breakdown } = match;
             const delay = index * 0.1;
             
             const el = document.createElement('div');
             el.className = 'volunteer-card';
             el.style.animation = `fadeIn 0.3s ease ${delay}s both`;
             
-            let colorScore = score > 70 ? 'var(--success)' : score > 40 ? 'var(--warning)' : 'var(--text-secondary)';
+            const colorScore = score > 70 ? 'var(--success)' : score > 40 ? 'var(--warning)' : 'var(--text-secondary)';
+            const scoreLabel = score > 70 ? 'Excellent Match' : score > 40 ? 'Good Match' : 'Possible Match';
 
             el.innerHTML = `
                 <div class="vol-info">
                     <img src="${volunteer.avatar}" class="vol-avatar" alt="${volunteer.name}">
                     <div class="vol-details">
-                        <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                             <h4>${volunteer.name}</h4>
-                            <span class="impact-pts" style="font-size:10px; background:rgba(79, 70, 229, 0.2); color:var(--accent-primary); padding:2px 6px; border-radius:10px; font-weight:700;">${volunteer.points} pts</span>
+                            <span style="font-size:10px; background:rgba(79,70,229,0.2); color:var(--accent-primary); padding:2px 6px; border-radius:10px; font-weight:700;">${volunteer.points} pts</span>
                         </div>
                         <div class="vol-meta">
                             <span><span class="material-symbols-outlined" style="font-size:16px;">location_on</span> ${volunteer.location}</span>
-                            <span style="color: ${volunteer.availability === 'High' ? 'var(--success)' : 'inherit'}">
+                            <span style="color: ${volunteer.availability === 'High' ? 'var(--success)' : volunteer.availability === 'Medium' ? 'var(--warning)' : 'var(--text-secondary)'}">
                                 ${volunteer.availability} Availability
                             </span>
                         </div>
-                        <div style="margin-top: 4px; display:flex; gap:4px; flex-wrap:wrap;">
+                        <div style="margin-top:4px; display:flex; gap:4px; flex-wrap:wrap;">
                             ${volunteer.badges.map(b => `<span style="font-size:10px; color:var(--warning); border:1px solid var(--warning); padding:1px 4px; border-radius:4px;">${b}</span>`).join('')}
                         </div>
-                        <div style="margin-top: 6px; font-size: 12px; color: var(--text-secondary)">
+                        <div style="margin-top:6px; font-size:12px; color:var(--text-secondary);">
                             ${reasons.join(' • ')}
                         </div>
-                        <div class="score-breakdown" style="margin-top: 10px; display:flex; gap:12px; font-size:10px; opacity:0.8;">
-                            <span>Skills: ${match.breakdown.skills}%</span>
-                            <span>Proximity: ${match.breakdown.proximity}%</span>
-                            <span>Availability: ${match.breakdown.availability}%</span>
+                        <div style="margin-top:8px; display:flex; gap:8px; font-size:10px; opacity:0.75;">
+                            <span title="Skill Match">🎯 Skills: ${breakdown.skills}%</span>
+                            <span title="Proximity">📍 Proximity: ${breakdown.proximity}%</span>
+                            <span title="Availability">⏰ Available: ${breakdown.availability}%</span>
                         </div>
                     </div>
                 </div>
                 <div class="match-score">
-                    <div class="score-circle" style="color: ${colorScore}; border-color: ${colorScore}; background: ${colorScore}22;">
-                        ${match.score}%
+                    <div class="score-circle" style="color:${colorScore}; border-color:${colorScore}; background:${colorScore}22;">
+                        ${score}%
                     </div>
-                    <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">Assign</button>
+                    <div style="font-size:10px; text-align:center; color:${colorScore}; margin-top:4px;">${scoreLabel}</div>
+                    <button class="btn btn-primary" style="padding:6px 12px; font-size:12px; margin-top:8px;" onclick="app.assignVolunteer('${volunteer.id}', '${task.id}')" aria-label="Assign ${volunteer.name} to this task">Assign</button>
                 </div>
             `;
             matchContainer.appendChild(el);
@@ -407,14 +411,30 @@ class App {
         if (form) {
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
-                
+                const data = new FormData(form);
+
+                // Build new task from form fields
+                const newTask = {
+                    id: 't' + Date.now(),
+                    title: form.querySelector('input[placeholder*="e.g. Emergency"]').value || 'New Task',
+                    category: form.querySelector('select').value || 'General',
+                    urgency: form.querySelectorAll('select')[1]?.value || 'medium',
+                    skills: (form.querySelector('input[placeholder*="Skills"]').value || '').split(',').map(s => s.trim()).filter(Boolean),
+                    location: form.querySelector('input[placeholder*="Location"]').value || 'Unknown',
+                    description: form.querySelector('textarea').value || '',
+                    timestamp: 'Just now',
+                    status: 'Pending'
+                };
+
+                // Add to live task list
+                this.tasks.unshift(newTask);
+
                 // Animate submission success
                 const btn = form.querySelector('button[type="submit"]');
                 const originalText = btn.textContent;
-                
                 btn.style.background = 'var(--success)';
-                btn.innerHTML = '<span class="material-symbols-outlined" style="vertical-align:middle; margin-right:4px;">check_circle</span> Ingested Successfully';
-                
+                btn.innerHTML = '<span class="material-symbols-outlined" style="vertical-align:middle; margin-right:4px;">check_circle</span> Ingested Successfully!';
+
                 setTimeout(() => {
                     form.reset();
                     btn.style.background = '';
@@ -565,10 +585,29 @@ class App {
     toggleTaskStatus(taskId) {
         const task = this.tasks.find(t => t.id === taskId);
         if (!task) return;
-
         task.status = task.status === 'Resolved' ? 'Pending' : 'Resolved';
         this.renderDashboard();
         if (this.currentView === 'matcher') this.selectTaskForMatching(taskId);
+    }
+
+    assignVolunteer(volunteerId, taskId) {
+        const volunteer = this.volunteers.find(v => v.id === volunteerId);
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!volunteer || !task) return;
+
+        // Award points
+        volunteer.points = (volunteer.points || 0) + 50;
+        task.status = 'In Progress';
+        task.assignedTo = volunteer.name;
+
+        // Visual feedback
+        const btn = event.target;
+        btn.textContent = `✓ Assigned to ${volunteer.name}`;
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-success');
+        btn.disabled = true;
+
+        this.renderDashboard();
     }
 }
 

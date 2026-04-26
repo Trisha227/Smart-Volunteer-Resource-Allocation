@@ -1,53 +1,68 @@
 class MatchingEngine {
     constructor(volunteers) {
         this.volunteers = volunteers;
+
+        // Weighted scoring system (must add up to 1.0)
+        this.weights = {
+            skills: 0.60,       // 60% weight on skill match
+            proximity: 0.30,    // 30% weight on location
+            availability: 0.10  // 10% weight on availability
+        };
     }
 
     /**
      * Calculates a match score between a task and a volunteer.
-     * Score is based on:
-     * - Skill overlap (Highest weight)
-     * - Location proximity (Medium weight)
-     * - Availability (Low weight)
+     * Returns a score 0-100 with a full breakdown.
      */
     calculateMatchScore(task, volunteer) {
-        let score = 0;
         let reasons = [];
 
-        // 1. Skill Match (up to 60 points)
-        const matchedSkills = volunteer.skills.filter(skill => task.skills.includes(skill));
-        const skillPercentage = task.skills.length > 0 ? (matchedSkills.length / task.skills.length) : 0;
-        const skillScore = skillPercentage * 60;
-        score += skillScore;
-        
+        // 1. Skill Match (0-100)
+        const matchedSkills = volunteer.skills.filter(skill =>
+            task.skills.some(ts => ts.toLowerCase().includes(skill.toLowerCase()) || skill.toLowerCase().includes(ts.toLowerCase()))
+        );
+        const skillScore = task.skills.length > 0
+            ? (matchedSkills.length / task.skills.length) * 100
+            : 0;
+
         if (matchedSkills.length > 0) {
-            reasons.push(`${matchedSkills.length} matching skills`);
+            reasons.push(`${matchedSkills.length} matching skill${matchedSkills.length > 1 ? 's' : ''}`);
         } else {
-            reasons.push(`No matching skills`);
+            reasons.push('No direct skill match');
         }
 
-        // 2. Location Proximity (up to 30 points)
-        // Mocking proximity: exact match gets 30, otherwise partial match gets 15, else 0
-        if (task.location.toLowerCase().includes(volunteer.location.toLowerCase())) {
-            score += 30;
+        // 2. Location Proximity (0-100)
+        let proximityScore = 0;
+        const taskLoc = task.location.toLowerCase();
+        const volLoc = volunteer.location.toLowerCase();
+
+        if (taskLoc.includes(volLoc) || volLoc.includes(taskLoc)) {
+            proximityScore = 100;
             reasons.push('Nearby location');
         } else {
+            proximityScore = 30; // Partial score — still deployable
             reasons.push('Further away');
         }
 
-        // 3. Availability (up to 10 points)
+        // 3. Availability (0-100)
         let availabilityScore = 0;
         if (volunteer.availability === 'High') {
             availabilityScore = 100;
+            reasons.push('High availability');
         } else if (volunteer.availability === 'Medium') {
             availabilityScore = 50;
+            reasons.push('Medium availability');
+        } else {
+            availabilityScore = 10;
+            reasons.push('Low availability');
         }
 
-        const finalScore = Math.round(
-            (skillScore * this.weights.skills) + 
-            (proximityScore * this.weights.proximity) + 
+        // Weighted final score
+        const finalScore = Math.min(100, Math.round(
+            (skillScore * this.weights.skills) +
+            (proximityScore * this.weights.proximity) +
             (availabilityScore * this.weights.availability)
-        );
+        ));
 
         return {
             volunteer,
@@ -66,10 +81,7 @@ class MatchingEngine {
      */
     getMatchesForTask(task, limit = 5) {
         const matches = this.volunteers.map(vol => this.calculateMatchScore(task, vol));
-        
-        // Sort descending by score
         matches.sort((a, b) => b.score - a.score);
-        
         return matches.slice(0, limit);
     }
 }
