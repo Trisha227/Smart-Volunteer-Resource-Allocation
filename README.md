@@ -52,19 +52,22 @@ This project is built using a modern, scalable stack with a focus on Google Clou
 *   **🧠 Vision AI OCR:** Instantly digitize handwritten paper surveys and field reports using **Google Cloud Vision AI**.
 *   **⚖️ Gemini Need Score:** Uses **Gemini 1.5 Flash** to calculate a dynamic 0-100 priority score based on severity, scale, and urgency.
 *   **🎯 Smart Matching Engine:** Algorithmic matching that ranks volunteers by **Skills (60%)**, **Proximity (30%)**, and **Availability (10%)**.
+*   **💬 AI Coordinator Chatbot:** A context-aware assistant that answers questions about LIVE platform data (e.g., *"Which shelter is at capacity?"*).
+*   **🌍 UN SDG Auto-Tagging:** Gemini automatically tags every report with a **UN Sustainable Development Goal** (e.g., SDG 2: Zero Hunger) for cause alignment.
+*   **🎤 Voice-First Ingestion:** Hands-free field reporting using **Web Speech API**; transcribe and structure reports instantly.
 *   **🗺️ Interactive Hotspots:** Real-time spatial mapping with **Leaflet.js** to visualize community needs geographically.
 *   **📈 Professional Analytics:** Export impact reports via **CSV** or **PDF** for stakeholders and donors.
-*   **🌍 Multi-Language Core:** Seamlessly switch between **English, Spanish, and Hindi**.
 
 ---
 
 ## 🏗️ How It Works (AI Pipeline)
 
-ImpactConnect uses a sophisticated 3-step pipeline to handle community data:
+ImpactConnect uses a sophisticated multi-stage pipeline to handle community data:
 
-1.  **Ingestion (Vision AI):** Field workers take photos of paper surveys. The system uses OCR to extract raw text, handling messy handwriting and various formats.
-2.  **Analysis (Gemini 1.5):** The raw text is fed into Gemini, which performs "Entity Extraction" to identify the category (Food, Water, Medical), the number of people affected, and specific skills required.
-3.  **Prioritization (Need Score):** Gemini analyzes the context to assign a **Need Score**. High scores (80+) trigger immediate "Critical" alerts on the dashboard.
+1.  **Ingestion (Voice & Vision):** Field workers record voice notes or take photos of paper surveys. The system uses Web Speech API or Vision AI to extract raw text.
+2.  **Analysis (Gemini 1.5):** The raw text is fed into Gemini, which performs "Entity Extraction" to identify categories, affected counts, and required skills.
+3.  **SDG Tagging:** Gemini automatically classifies the report against the **17 UN Sustainable Development Goals**, ensuring humanitarian mission alignment.
+4.  **Prioritization (Need Score):** Gemini analyzes the context to assign a **Need Score**. High scores (80+) trigger immediate "Critical" alerts on the dashboard.
 
 ---
 
