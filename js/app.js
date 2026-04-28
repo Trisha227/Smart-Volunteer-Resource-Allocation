@@ -22,6 +22,7 @@ class App {
         };
         
         this.currentView = '';
+        this.onboardingComplete = localStorage.getItem('onboarding_done') === 'true';
         this.init();
     }
 
@@ -72,6 +73,7 @@ class App {
 
         // Load initial view
         this.switchView('dashboard');
+        setTimeout(() => this.startOnboarding(), 1000);
     }
 
     updateLanguage(lang) {
@@ -144,10 +146,7 @@ class App {
         urgentTasks.slice(0, 4).forEach(task => {
             const el = document.createElement('div');
             el.className = `task-item ${task.urgency}`;
-            el.onclick = () => {
-                this.switchView('matcher');
-                setTimeout(() => this.selectTaskForMatching(task.id), 50);
-            };
+            el.onclick = () => this.openTaskModal(task.id);
 
             el.innerHTML = `
                 <div class="task-main">
@@ -437,6 +436,7 @@ class App {
                 };
                 this.tasks.unshift(newTask);
 
+                this.showToast(`New task "${newTask.title}" added to system`, 'success');
                 const btn = form.querySelector('button[type="submit"]');
                 btn.style.background = 'var(--success)';
                 btn.innerHTML = '<span class="material-symbols-outlined" style="vertical-align:middle;">check_circle</span> Task Added!';
@@ -594,8 +594,14 @@ class App {
         
         if (!categoryContainer || !weeklyContainer || !areaContainer) return;
 
-        // Render Bar Chart (Categories)
-        categoryContainer.innerHTML = '';
+        // Simulate Loading with Skeleton
+        categoryContainer.innerHTML = '<div class="skeleton" style="width:100%; height:100%;"></div>';
+        weeklyContainer.innerHTML = '<div class="skeleton" style="width:100%; height:100%;"></div>';
+        areaContainer.innerHTML = '<div class="skeleton" style="width:100%; height:40px;"></div><div class="skeleton" style="width:100%; height:40px;"></div>';
+
+        setTimeout(() => {
+            // Render Bar Chart (Categories)
+            categoryContainer.innerHTML = '';
         const maxCount = Math.max(...mockTrends.needsByCategory.map(c => c.count));
         mockTrends.needsByCategory.forEach(item => {
             const heightPct = (item.count / maxCount) * 100;
@@ -640,7 +646,8 @@ class App {
             `;
             areaContainer.appendChild(el);
         });
-    }
+    }, 800);
+}
 
     // --- Professional Workflow Methods ---
     handleGlobalSearch(query) {
@@ -704,6 +711,114 @@ class App {
         btn.disabled = true;
 
         this.renderDashboard();
+    // --- Professional UX Additions ---
+    showToast(message, type = 'info') {
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+
+        const icons = { success: 'check_circle', error: 'error', info: 'info' };
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <span class="material-symbols-outlined toast-icon">${icons[type]}</span>
+            <div class="toast-content">${message}</div>
+        `;
+
+        container.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 400);
+        }, 4000);
+    }
+
+    startOnboarding() {
+        if (this.onboardingComplete) return;
+
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay onboarding-overlay';
+        overlay.style.display = 'flex';
+        overlay.innerHTML = `
+            <div class="glass-panel modal-content" style="text-align: center;">
+                <h2 style="font-size: 32px; margin-bottom: 16px;">Welcome to ImpactConnect! 🚀</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 24px;">Your intelligent command center for NGO resource allocation. Let's get you started.</p>
+                <div style="display: grid; gap: 16px; text-align: left; margin-bottom: 32px;">
+                    <div style="display:flex; gap:16px;">
+                        <span class="material-symbols-outlined" style="color:var(--accent-primary)">upload_file</span>
+                        <div><strong>Step 1: Digitize</strong> Scan surveys via Vision AI in the Ingest tab.</div>
+                    </div>
+                    <div style="display:flex; gap:16px;">
+                        <span class="material-symbols-outlined" style="color:var(--accent-primary)">psychology</span>
+                        <div><strong>Step 2: Score</strong> Gemini calculates Need Scores automatically.</div>
+                    </div>
+                    <div style="display:flex; gap:16px;">
+                        <span class="material-symbols-outlined" style="color:var(--accent-primary)">group</span>
+                        <div><strong>Step 3: Match</strong> Connect volunteers based on skills and proximity.</div>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-full btn-large" id="btn-close-onboarding">Explore Dashboard</button>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        document.getElementById('btn-close-onboarding').onclick = () => {
+            overlay.remove();
+            localStorage.setItem('onboarding_done', 'true');
+            this.onboardingComplete = true;
+            this.showToast('You are all set! Check the Help tab for more guides.', 'success');
+        };
+    // --- Modal Management ---
+    openTaskModal(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const template = document.getElementById('tpl-modal');
+        const modal = template.content.cloneNode(true).querySelector('.modal-overlay');
+        document.body.appendChild(modal);
+
+        const body = modal.querySelector('#modal-body');
+        body.innerHTML = `
+            <div class="modal-task-header">
+                <span class="tag ${task.urgency}">${task.urgency}</span>
+                <h2 style="margin: 12px 0 8px;">${task.title}</h2>
+                <p style="color:var(--text-secondary); display:flex; align-items:center; gap:8px;">
+                    <span class="material-symbols-outlined" style="font-size:18px;">location_on</span> ${task.location}
+                </p>
+            </div>
+            <div style="margin: 24px 0; line-height: 1.6;">
+                <h4 style="margin-bottom:8px;">Description</h4>
+                <p>${task.description}</p>
+            </div>
+            <div style="margin-bottom: 24px;">
+                <h4 style="margin-bottom:8px;">Required Skills</h4>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    ${task.skills.map(s => `<span class="tag medium">${s}</span>`).join('')}
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                <button class="btn btn-primary" onclick="app.closeModal(); app.switchView('matcher'); setTimeout(() => app.selectTaskForMatching('${task.id}'), 100)">
+                    Find Matches
+                </button>
+                <button class="btn btn-secondary" onclick="app.toggleTaskStatus('${task.id}'); app.closeModal();">
+                    ${task.status === 'Resolved' ? 'Mark Pending' : 'Mark Resolved'}
+                </button>
+            </div>
+        `;
+
+        modal.style.display = 'flex';
+        setTimeout(() => modal.style.opacity = '1', 10);
+    }
+
+    closeModal() {
+        const modal = document.querySelector('.modal-overlay:not(.onboarding-overlay)');
+        if (modal) {
+            modal.style.opacity = '0';
+            setTimeout(() => modal.remove(), 300);
+        }
     }
 }
 

@@ -504,6 +504,16 @@
         </div>
     </template>
 
+    <!-- Task Detail Modal Template -->
+    <template id="tpl-modal">
+        <div class="modal-overlay" id="task-modal">
+            <div class="glass-panel modal-content" style="position: relative;">
+                <span class="material-symbols-outlined modal-close" onclick="app.closeModal()" style="position: absolute; top: 16px; right: 16px; cursor: pointer;">close</span>
+                <div id="modal-body"></div>
+            </div>
+        </div>
+    </template>
+
     <script src="js/mockData.js"></script>
     <script src="js/db.js"></script>
     <script src="js/matchingEngine.js"></script>
