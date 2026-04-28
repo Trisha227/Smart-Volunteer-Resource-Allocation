@@ -14,6 +14,7 @@ ImpactConnect is a high-performance, AI-powered platform designed for NGOs to di
 
 ## 📌 Table of Contents
 - [📝 Project Overview](#-project-overview)
+- [🎯 Strategic Alignment (Judging Criteria)](#-strategic-alignment-judging-criteria)
 - [🛠️ Tech Stack & Tools](#️-tech-stack--tools)
 - [🚀 Key Features](#-key-features)
 - [🏗️ How It Works (AI Pipeline)](#️-how-it-works-ai-pipeline)
@@ -24,6 +25,21 @@ ImpactConnect is a high-performance, AI-powered platform designed for NGOs to di
 - [🛠️ Local Setup & Installation](#️-local-setup--installation)
 - [🐳 Docker & Cloud Deployment](#-docker--cloud-deployment)
 - [📄 License & Authors](#-license--authors)
+
+---
+
+## 🎯 Strategic Alignment (Judging Criteria)
+
+ImpactConnect is engineered to excel across the four evaluation pillars of the **Google Solution Challenge 2026**:
+
+| Pillar | How We Address It |
+| :--- | :--- |
+| **Technical Merit (40%)** | Real-time Firebase data integration, Gemini 1.5 Flash structured analysis, and advanced Leaflet.js spatial mapping. |
+| **Alignment with Cause (25%)** | Native **UN SDG Auto-Tagging** for every community task, ensuring global humanitarian goals are met. |
+| **Innovation & Creativity (25%)** | **Voice-First Field Reporting** (accessibility) and a context-aware **AI Coordinator Chatbot** that queries live data. |
+| **User Experience (10%)** | Professional onboarding flow, glassmorphic UI, predictive skeleton loaders, and interactive map feedback. |
+
+---
 
 ---
 
