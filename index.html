@@ -16,14 +16,17 @@
     <header class="navbar">
         <div class="container">
             <div class="logo">
-                <span class="material-symbols-outlined">language</span>
-                <span>ImpactConnect</span>
+                <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
+                    <span class="material-symbols-outlined">language</span>
+                    <span>ImpactConnect</span>
+                </a>
             </div>
             <nav>
                 <a href="#features">Features</a>
-                <a href="#impact">Impact</a>
-                <a href="index.html" class="btn btn-outline">Go to Dashboard</a>
-                <a href="#signup" class="btn btn-primary">Join as Volunteer</a>
+                <a href="#how-it-works">How it Works</a>
+                <a href="#quick-start">Quick Start</a>
+                <a href="#compliance">Compliance</a>
+                <a href="app.html" class="btn btn-outline">Go to Dashboard</a>
             </nav>
         </div>
     </header>
@@ -34,8 +37,8 @@
                 <h1 class="animate-up">Bridging the Gap Between <span class="text-gradient">Needs</span> and <span class="text-gradient">Action</span></h1>
                 <p class="animate-up delay-1">Smart resource allocation for NGOs and local groups. We use data to match the right volunteers to the most urgent community needs, instantly.</p>
                 <div class="hero-btns animate-up delay-2">
-                    <a href="#signup" class="btn btn-large btn-primary">Start Volunteering</a>
-                    <a href="#features" class="btn btn-large btn-secondary">Learn How it Works</a>
+                    <a href="#quick-start" class="btn btn-large btn-primary">Get Started Now</a>
+                    <a href="#how-it-works" class="btn btn-large btn-secondary">Learn How it Works</a>
                 </div>
             </div>
             <div class="hero-image animate-fade delay-3">
@@ -53,7 +56,7 @@
         <div class="container">
             <div class="section-header">
                 <h2>Intelligent Coordination</h2>
-                <p>Designed to eliminate the chaos of manual coordination.</p>
+                <p>Designed to eliminate the chaos of manual coordination with Google AI.</p>
             </div>
             <div class="feature-grid">
                 <div class="feature-card">
@@ -70,6 +73,127 @@
                     <span class="material-symbols-outlined feat-icon">apartment</span>
                     <h3>Infrastructure Sync</h3>
                     <p>Monitor shelters, clinics, and emergency centers. Keep occupancy and resource levels in check.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>How It Works</h2>
+                <p>Digitizing community impact in three intelligent steps.</p>
+            </div>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-num">01</div>
+                    <span class="material-symbols-outlined step-icon">photo_camera</span>
+                    <h3>Vision AI Scan</h3>
+                    <p>Upload handwritten surveys or field reports. Google Vision AI extracts text with high precision.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">02</div>
+                    <span class="material-symbols-outlined step-icon">psychology</span>
+                    <h3>Gemini Intelligence</h3>
+                    <p>Gemini 1.5 analyzes unstructured text to categorize needs and identify required skills automatically.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">03</div>
+                    <span class="material-symbols-outlined step-icon">bolt</span>
+                    <h3>Smart Allocation</h3>
+                    <p>The platform calculates a dynamic Need Score and matches the best-suited local volunteers instantly.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Start Section -->
+    <section id="quick-start" class="quick-start">
+        <div class="container">
+            <div class="glass-panel quick-start-panel">
+                <div class="panel-content">
+                    <h2>Quick Start Guide</h2>
+                    <div class="guide-steps">
+                        <div class="guide-item">
+                            <span class="material-symbols-outlined">rocket_launch</span>
+                            <div>
+                                <h4>1. Launch Dashboard</h4>
+                                <p>Click "Go to Dashboard" to access the command center.</p>
+                            </div>
+                        </div>
+                        <div class="guide-item">
+                            <span class="material-symbols-outlined">upload_file</span>
+                            <div>
+                                <h4>2. Ingest Data</h4>
+                                <p>Go to "Ingest Data" and upload your field report or paste raw text.</p>
+                            </div>
+                        </div>
+                        <div class="guide-item">
+                            <span class="material-symbols-outlined">group_add</span>
+                            <div>
+                                <h4>3. Match & Assign</h4>
+                                <p>Select an urgent task and let the Smart Matcher find your team.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-action">
+                    <a href="app.html" class="btn btn-large btn-primary">Open Application Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Custom Dataset Section -->
+    <section id="datasets" class="datasets">
+        <div class="container">
+            <div class="split-section">
+                <div class="section-text">
+                    <h2>Custom Datasets</h2>
+                    <p>ImpactConnect is designed for flexibility. NGOs can import their own datasets via CSV or connect directly to Google Sheets for real-time synchronization.</p>
+                    <ul class="check-list">
+                        <li><span class="material-symbols-outlined">check_circle</span> Bulk import volunteer directories</li>
+                        <li><span class="material-symbols-outlined">check_circle</span> Sync with existing Google Sheets</li>
+                        <li><span class="material-symbols-outlined">check_circle</span> Export custom impact reports</li>
+                    </ul>
+                </div>
+                <div class="section-visual">
+                    <div class="glass-card code-preview">
+                        <pre><code>{
+  "org_id": "NGO_123",
+  "data_sync": "enabled",
+  "source": "google_sheets",
+  "auto_update": true
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Regulatory Compliance Section -->
+    <section id="compliance" class="compliance">
+        <div class="container">
+            <div class="section-header">
+                <h2>Regulatory Compliance & Privacy</h2>
+                <p>We prioritize the safety and privacy of community data.</p>
+            </div>
+            <div class="compliance-grid">
+                <div class="compliance-card">
+                    <span class="material-symbols-outlined comp-icon">shield</span>
+                    <h3>Data Privacy (GDPR/PII)</h3>
+                    <p>All sensitive community data is encrypted. We strictly handle Personally Identifiable Information (PII) with limited access protocols.</p>
+                </div>
+                <div class="compliance-card">
+                    <span class="material-symbols-outlined comp-icon">lock</span>
+                    <h3>Secure Infrastructure</h3>
+                    <p>Built on Google Cloud with robust Firebase Security Rules, ensuring only authorized coordinators can access field data.</p>
+                </div>
+                <div class="compliance-card">
+                    <span class="material-symbols-outlined comp-icon">gavel</span>
+                    <h3>NGO Standards</h3>
+                    <p>Our reporting formats align with international NGO standards for humanitarian aid and resource reporting.</p>
                 </div>
             </div>
         </div>
@@ -133,13 +257,14 @@
                     <span>ImpactConnect</span>
                 </div>
                 <div class="footer-links">
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Terms of Service</a>
+                    <a href="#how-it-works">How it Works</a>
+                    <a href="#quick-start">Quick Start</a>
+                    <a href="#compliance">Privacy Policy</a>
                     <a href="#">Contact Us</a>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 ImpactConnect Platform. Built for Social Impact.</p>
+                <p>&copy; 2026 ImpactConnect Platform. Built for Google Solution Challenge.</p>
             </div>
         </div>
     </footer>

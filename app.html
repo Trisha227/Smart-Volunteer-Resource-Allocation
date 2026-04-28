@@ -56,6 +56,10 @@
                     <span class="material-symbols-outlined">insights</span>
                     Analytics
                 </button>
+                <button class="nav-item" data-view="help">
+                    <span class="material-symbols-outlined">help_center</span>
+                    Help & Guide
+                </button>
             </nav>
 
             <div class="language-switcher" style="padding: 16px; border-top: 1px solid var(--border-color); display: flex; gap: 8px;">
@@ -444,6 +448,57 @@
                     <div id="area-stats-list" class="area-stats-list">
                         <!-- Areas injected here -->
                     </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Help & Guide Template -->
+    <template id="tpl-help">
+        <div class="view help-view">
+            <div class="page-header">
+                <h2>Application Guide</h2>
+                <p>Everything you need to know about using the ImpactConnect platform.</p>
+            </div>
+
+            <div class="help-grid">
+                <div class="help-section glass-panel">
+                    <h3>🚀 Quick Start</h3>
+                    <ol class="help-list">
+                        <li><strong>Step 1:</strong> Go to <strong>Ingest Data</strong> to digitize surveys.</li>
+                        <li><strong>Step 2:</strong> Use <strong>Smart Matcher</strong> to find local volunteers.</li>
+                        <li><strong>Step 3:</strong> Monitor progress via the <strong>Dashboard Map</strong>.</li>
+                    </ol>
+                </div>
+
+                <div class="help-section glass-panel">
+                    <h3>🧠 How it Works (AI)</h3>
+                    <p>We use a multi-stage Google AI pipeline:</p>
+                    <ul class="help-list">
+                        <li><strong>Vision AI:</strong> OCR for paper reports.</li>
+                        <li><strong>Gemini 1.5:</strong> Structured extraction & Categorization.</li>
+                        <li><strong>Need Score:</strong> Advanced priority calculation (0-100).</li>
+                    </ul>
+                </div>
+
+                <div class="help-section glass-panel">
+                    <h3>📊 Custom Datasets</h3>
+                    <p>NGOs can integrate their own data:</p>
+                    <ul class="help-list">
+                        <li>Import via <strong>CSV</strong> in the Analytics tab.</li>
+                        <li>Direct <strong>Google Sheets</strong> sync available for Enterprise accounts.</li>
+                        <li>Custom field mapping for local regional needs.</li>
+                    </ul>
+                </div>
+
+                <div class="help-section glass-panel">
+                    <h3>🛡️ Compliance & Safety</h3>
+                    <p>ImpactConnect is built with humanitarian standards:</p>
+                    <ul class="help-list">
+                        <li><strong>PII Security:</strong> Encrypted volunteer data.</li>
+                        <li><strong>GDPR Ready:</strong> Built-in data deletion tools.</li>
+                        <li><strong>NGO Audit:</strong> Exportable logs for transparency.</li>
+                    </ul>
                 </div>
             </div>
         </div>

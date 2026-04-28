@@ -85,6 +85,7 @@ class App {
         navs[2].childNodes[2].nodeValue = ' ' + this.translations[lang].ingest;
         navs[3].childNodes[2].nodeValue = ' ' + this.translations[lang].facilities;
         navs[4].childNodes[2].nodeValue = ' ' + this.translations[lang].analytics;
+        if (navs[5]) navs[5].childNodes[2].nodeValue = ' Help & Guide';
 
         // Re-render current view to update content
         const view = this.currentView;
@@ -205,6 +206,8 @@ class App {
             this.renderFacilities();
         } else if (viewId === 'analytics') {
             this.renderAnalytics();
+        } else if (viewId === 'help') {
+            // Static template content, no extra logic needed
         }
 
         // Reset map instance when navigating away from dashboard
