@@ -722,6 +722,7 @@ class App {
         btn.disabled = true;
 
         this.renderDashboard();
+    }
     // --- Professional UX Additions ---
     showToast(message, type = 'info') {
         let container = document.querySelector('.toast-container');
@@ -782,6 +783,7 @@ class App {
             this.onboardingComplete = true;
             this.showToast('You are all set! Check the Help tab for more guides.', 'success');
         };
+    }
     // --- Modal Management ---
     openTaskModal(taskId) {
         const task = this.tasks.find(t => t.id === taskId);
