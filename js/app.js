@@ -834,6 +834,7 @@ class App {
             modal.style.opacity = '0';
             setTimeout(() => modal.remove(), 300);
         }
+    }
     // --- Chat UI Methods ---
     toggleChat() {
         const drawer = document.getElementById('chat-drawer');
