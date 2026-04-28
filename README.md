@@ -24,6 +24,7 @@ ImpactConnect is a high-performance, AI-powered platform designed for NGOs to di
 - [🛡️ Regulatory Compliance & Privacy](#️-regulatory-compliance--privacy)
 - [🛠️ Local Setup & Installation](#️-local-setup--installation)
 - [🐳 Docker & Cloud Deployment](#-docker--cloud-deployment)
+- [🚀 Future Roadmap](#-future-roadmap)
 - [📄 License & Authors](#-license--authors)
 
 ---
@@ -161,6 +162,16 @@ This project is optimized for Cloud Run. Use the included `Dockerfile` and `ngin
 
 ### GitHub Pages / Netlify
 The project is a static SPA, making it perfect for free, permanent hosting on GitHub Pages or Netlify.
+
+---
+
+## 🚀 Future Roadmap
+
+ImpactConnect is a living platform with a clear vision for 2026 and beyond:
+*   **Real-Time SMS Integration:** Direct volunteer dispatch via Twilio for low-connectivity areas.
+*   **Predictive Disaster Modeling:** AI-driven forecasting of resource needs based on local weather and news data.
+*   **Mobile App (Flutter):** Native mobile client for volunteers to manage tasks and provide proof-of-impact.
+*   **NGO Collaborative Hub:** Secure data-sharing protocol allowing multiple NGOs to coordinate in the same region.
 
 ---
 
