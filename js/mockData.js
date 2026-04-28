@@ -6,8 +6,12 @@ const mockTasks = [
         urgency: 'critical',
         skills: ['Logistics', 'Heavy Lifting', 'Driving'],
         location: 'Downtown Community Center',
-        description: 'Need volunteers to help distribute 500 emergency food parcels to affected families.',
-        timestamp: '2 hours ago'
+        description: 'Need volunteers to help distribute 500 emergency food parcels to affected families in the Downtown area.',
+        timestamp: '2 hours ago',
+        affectedCount: 500,
+        status: 'Pending',
+        sdgTag: 'SDG 2: Zero Hunger',
+        sdgNumber: 2
     },
     {
         id: 't2',
@@ -16,38 +20,68 @@ const mockTasks = [
         urgency: 'high',
         skills: ['Translation', 'Spanish', 'First Aid'],
         location: 'Sector 4 Clinic',
-        description: 'Translators needed to assist doctors at the temporary medical camp.',
-        timestamp: '4 hours ago'
+        description: 'Translators needed to assist doctors at the temporary medical camp serving non-English speaking communities.',
+        timestamp: '4 hours ago',
+        affectedCount: 120,
+        status: 'Pending',
+        sdgTag: 'SDG 3: Good Health & Well-being',
+        sdgNumber: 3
     },
     {
         id: 't3',
         title: 'Temporary Shelter Setup',
-        category: 'Shelter',
+        category: 'Emergency Shelter',
         urgency: 'critical',
         skills: ['Construction', 'Coordination'],
         location: 'Southside High School',
-        description: 'Urgent help required to set up cots and basic facilities in the school gym.',
-        timestamp: '5 hours ago'
+        description: 'Urgent help required to set up cots and basic facilities in the school gym for displaced families.',
+        timestamp: '5 hours ago',
+        affectedCount: 250,
+        status: 'In Progress',
+        sdgTag: 'SDG 11: Sustainable Cities',
+        sdgNumber: 11
     },
     {
         id: 't4',
         title: 'Supplies Inventory Management',
-        category: 'Logistics',
+        category: 'Logistics/Transport',
         urgency: 'medium',
         skills: ['Organization', 'Data Entry'],
         location: 'Main Warehouse',
-        description: 'Catalog incoming donations and update the central inventory system.',
-        timestamp: '1 day ago'
+        description: 'Catalog incoming donations and update the central inventory system to optimize distribution.',
+        timestamp: '1 day ago',
+        affectedCount: 800,
+        status: 'Pending',
+        sdgTag: 'SDG 10: Reduced Inequalities',
+        sdgNumber: 10
     },
     {
         id: 't5',
-        title: 'Post-Flood Cleanup',
-        category: 'Sanitation',
+        title: 'Post-Flood Water Safety Check',
+        category: 'Water & Sanitation',
         urgency: 'high',
-        skills: ['Physical Labor', 'Sanitation'],
+        skills: ['Physical Labor', 'Sanitation', 'Water Testing'],
         location: 'Riverfront District',
-        description: 'Help clear debris and clean up mud from community spaces.',
-        timestamp: '1 day ago'
+        description: 'Test water sources and distribute purification tablets to households after flood contamination.',
+        timestamp: '1 day ago',
+        affectedCount: 340,
+        status: 'Pending',
+        sdgTag: 'SDG 6: Clean Water & Sanitation',
+        sdgNumber: 6
+    },
+    {
+        id: 't6',
+        title: 'After-School Tutoring Program',
+        category: 'Education',
+        urgency: 'low',
+        skills: ['Teaching', 'Mentoring', 'Child Care'],
+        location: 'West End Community Hall',
+        description: 'Volunteer tutors needed to support displaced children who have missed schooling due to the emergency.',
+        timestamp: '2 days ago',
+        affectedCount: 60,
+        status: 'Resolved',
+        sdgTag: 'SDG 4: Quality Education',
+        sdgNumber: 4
     }
 ];
 

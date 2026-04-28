@@ -514,11 +514,96 @@
         </div>
     </template>
 
+    <!-- Chatbot Drawer -->
+    <div class="chat-drawer" id="chat-drawer">
+        <div class="chat-header">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span class="material-symbols-outlined" style="color:var(--accent-primary)">psychology</span>
+                <div>
+                    <h3 style="font-size:16px;">AI Coordinator</h3>
+                    <p style="font-size:11px; opacity:0.7;">Powered by Gemini 1.5</p>
+                </div>
+            </div>
+            <span class="material-symbols-outlined chat-close" onclick="app.toggleChat()">close</span>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="message ai">
+                Hello! I'm your AI Coordinator. I have live access to all platform data. Ask me anything about shelters, critical tasks, or volunteer matching!
+            </div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Ask AI about live data..." onkeypress="if(event.key==='Enter') app.handleChat()">
+            <button class="icon-btn" onclick="app.handleChat()">
+                <span class="material-symbols-outlined">send</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Chat Toggle Button -->
+    <button class="chat-toggle" id="chat-toggle" onclick="app.toggleChat()">
+        <span class="material-symbols-outlined">forum</span>
+        <span class="chat-badge">AI</span>
+    </button>
+
+    <!-- Data Entry Template Update -->
+    <template id="tpl-data-entry">
+        <div class="view data-entry-view">
+            <div class="page-header">
+                <h2>Ingest Community Data</h2>
+                <p>Digitize paper surveys or record field voice notes</p>
+            </div>
+            
+            <div class="ingest-grid">
+                <div class="glass-panel form-section">
+                    <form id="ingest-form">
+                        <div class="form-group">
+                            <label>Survey Text / Field Report</label>
+                            <div style="position:relative;">
+                                <textarea id="raw-text" placeholder="Paste OCR text, raw field notes, or use the microphone..." required></textarea>
+                                <button type="button" class="voice-btn" id="voice-trigger">
+                                    <span class="material-symbols-outlined">mic</span>
+                                </button>
+                            </div>
+                            <div id="voice-status" class="voice-status"></div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" id="btn-vision-ai">
+                                <span class="material-symbols-outlined">photo_camera</span> Scan via Vision AI
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="btn-analyze">
+                                <span class="material-symbols-outlined">psychology</span> Analyze with Gemini
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="glass-panel preview-section" id="ai-preview" style="display:none;">
+                    <div class="preview-header">
+                        <h3>AI Analysis Results</h3>
+                        <div id="confidence-tag"></div>
+                    </div>
+                    <div id="preview-content">
+                        <!-- AI Result Summary -->
+                    </div>
+                    <div class="sdg-badge-container" id="sdg-preview-container" style="margin-top:16px;">
+                        <!-- SDG Tag injected here -->
+                    </div>
+                    <div class="preview-footer">
+                        <button class="btn btn-secondary" onclick="document.getElementById('ai-preview').style.display='none'">Discard</button>
+                        <button class="btn btn-primary" id="btn-save-task">Confirm & Add to Dashboard</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
     <script src="js/mockData.js"></script>
     <script src="js/db.js"></script>
     <script src="js/matchingEngine.js"></script>
     <script src="js/visionService.js"></script>
     <script src="js/aiService.js"></script>
+    <script src="js/chatService.js"></script>
+    <script src="js/voiceService.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

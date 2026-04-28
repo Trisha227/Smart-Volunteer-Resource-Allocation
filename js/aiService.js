@@ -66,6 +66,14 @@ class AIService {
             3. "skills" must be an array of specific, actionable skills volunteers need
             4. "affectedCount" should estimate number of people affected (integer)
             5. "confidence" is your confidence in the extraction from 0-100
+            6. "sdgNumber" MUST be one of: 1, 2, 3, 4, 6, 10, 11, 13 (UN SDG numbers)
+            7. "sdgTag" MUST follow this mapping:
+               - Food Security → "SDG 2: Zero Hunger"
+               - Medical Assistance → "SDG 3: Good Health & Well-being"
+               - Emergency Shelter → "SDG 11: Sustainable Cities"
+               - Education → "SDG 4: Quality Education"
+               - Water & Sanitation → "SDG 6: Clean Water & Sanitation"
+               - Logistics/Transport → "SDG 10: Reduced Inequalities"
 
             REPORT TEXT:
             "${rawText}"
@@ -79,6 +87,8 @@ class AIService {
                 "location": "Specific area name extracted from the text",
                 "description": "Clean, professional 2-sentence summary of the need",
                 "affectedCount": 50,
+                "sdgNumber": 2,
+                "sdgTag": "SDG 2: Zero Hunger",
                 "reasoning": "One sentence explaining your urgency and category choice",
                 "confidence": 85
             }

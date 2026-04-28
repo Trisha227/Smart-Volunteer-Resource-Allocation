@@ -6,6 +6,8 @@ class App {
         this.ai = new AIService();
         this.vision = new VisionService();
         this.db = new DBService();
+        this.voice = new VoiceService();
+        this.chatService = new ChatService(this.ai);
         this.map = null;
         
         // Load Firebase Config if saved
@@ -359,6 +361,7 @@ class App {
         const form = document.getElementById('ingest-form');
         const aiBtn = document.getElementById('btn-ai-analyze');
         const loader = document.getElementById('ai-loader');
+        this.initVoiceCapture();
 
         // Wire up Vision AI scan button (triggered by upload)
         // Wire up Gemini Analyze button
@@ -394,11 +397,17 @@ class App {
                         if (affectedInput) affectedInput.value = result.affectedCount || '';
                         form.querySelector('textarea').value = result.description || '';
 
-                        // Show AI Reasoning
+                        // Show AI Reasoning & SDG Badge
                         const reasonBox = document.getElementById('ai-reasoning-box');
                         if (reasonBox && result.reasoning) {
                             reasonBox.style.display = 'block';
-                            reasonBox.innerHTML = `<strong>🧠 Gemini Reasoning:</strong> ${result.reasoning} <em style="color:var(--text-secondary); font-size:11px;">(Confidence: ${result.confidence || '?'}%)</em>`;
+                            reasonBox.innerHTML = `
+                                <strong>🧠 Gemini Reasoning:</strong> ${result.reasoning} <em style="color:var(--text-secondary); font-size:11px;">(Confidence: ${result.confidence || '?'}%)</em>
+                                <div class="sdg-badge" style="margin-top:12px;">
+                                    <div class="sdg-icon sdg-${result.sdgNumber}"></div>
+                                    <span>Aligned with ${result.sdgTag}</span>
+                                </div>
+                            `;
                         }
 
                         // Step 3: Calculate Need Score
@@ -432,7 +441,9 @@ class App {
                     description: form.querySelector('textarea')?.value || '',
                     affectedCount: parseInt(document.getElementById('affected-count')?.value) || 0,
                     timestamp: 'Just now',
-                    status: 'Pending'
+                    status: 'Pending',
+                    sdgTag: form.dataset.sdgTag || 'SDG 11: Sustainable Cities',
+                    sdgNumber: form.dataset.sdgNumber || 11
                 };
                 this.tasks.unshift(newTask);
 
@@ -788,6 +799,10 @@ class App {
                 <p style="color:var(--text-secondary); display:flex; align-items:center; gap:8px;">
                     <span class="material-symbols-outlined" style="font-size:18px;">location_on</span> ${task.location}
                 </p>
+                <div class="sdg-badge" style="margin-top:12px; background:rgba(255,255,255,0.03); border:1px solid var(--border-color);">
+                    <div class="sdg-icon sdg-${task.sdgNumber || 11}"></div>
+                    <span style="font-size:11px;">${task.sdgTag || 'SDG 11: Sustainable Cities'}</span>
+                </div>
             </div>
             <div style="margin: 24px 0; line-height: 1.6;">
                 <h4 style="margin-bottom:8px;">Description</h4>
@@ -819,6 +834,87 @@ class App {
             modal.style.opacity = '0';
             setTimeout(() => modal.remove(), 300);
         }
+    // --- Chat UI Methods ---
+    toggleChat() {
+        const drawer = document.getElementById('chat-drawer');
+        const badge = document.querySelector('.chat-badge');
+        drawer.classList.toggle('open');
+        if (drawer.classList.contains('open')) {
+            badge.style.display = 'none';
+            document.getElementById('chat-input').focus();
+        }
+    }
+
+    async handleChat() {
+        const input = document.getElementById('chat-input');
+        const messagesContainer = document.getElementById('chat-messages');
+        const text = input.value.trim();
+        if (!text) return;
+
+        // User message
+        this.appendChatMessage(text, 'user');
+        input.value = '';
+
+        // AI Thinking state
+        const thinkingId = 'thinking-' + Date.now();
+        const thinkingEl = document.createElement('div');
+        thinkingEl.className = 'message ai thinking';
+        thinkingEl.id = thinkingId;
+        thinkingEl.innerHTML = '<span class="skeleton" style="display:inline-block; width:60px; height:14px;"></span>';
+        messagesContainer.appendChild(thinkingEl);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        try {
+            const response = await this.chatService.chat(text, this.tasks, this.volunteers, mockFacilities);
+            thinkingEl.remove();
+            this.appendChatMessage(response, 'ai');
+        } catch (err) {
+            thinkingEl.remove();
+            this.appendChatMessage('I encountered an error analyzing the live data. Please check your connection.', 'ai');
+        }
+    }
+
+    appendChatMessage(text, sender) {
+        const container = document.getElementById('chat-messages');
+        const msg = document.createElement('div');
+        msg.className = `message ${sender}`;
+        msg.textContent = text;
+        container.appendChild(msg);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    // --- Voice Implementation ---
+    initVoiceCapture() {
+        const trigger = document.getElementById('voice-trigger');
+        const textarea = document.getElementById('raw-text');
+        const status = document.getElementById('voice-status');
+        if (!trigger) return;
+
+        trigger.onclick = () => {
+            if (this.voice.isListening) {
+                this.voice.stopListening();
+                trigger.classList.remove('listening');
+                status.textContent = '';
+            } else {
+                trigger.classList.add('listening');
+                status.textContent = 'Listening... Speak now.';
+                this.voice.startListening(
+                    (interim) => { textarea.value = interim; },
+                    (final) => {
+                        textarea.value = final;
+                        trigger.classList.remove('listening');
+                        status.textContent = 'Voice captured successfully!';
+                        this.showToast('Voice note recorded', 'success');
+                        setTimeout(() => status.textContent = '', 3000);
+                    },
+                    (err) => {
+                        trigger.classList.remove('listening');
+                        status.textContent = err;
+                        this.showToast(err, 'error');
+                    }
+                );
+            }
+        };
     }
 }
 
