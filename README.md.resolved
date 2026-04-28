@@ -1,11 +1,20 @@
 # ImpactConnect: Smart Resource Allocation Command Center
 🚀 **Data-Driven Volunteer Coordination for Social Impact**
 
+### 📝 Project Overview
+**Problem Statement:** Local social groups and NGOs collect a lot of important information about community needs through paper surveys and field reports. However, this valuable data is often scattered across different places, making it hard to see the biggest problems clearly.
+
+**Objective:** Design a powerful system that gathers scattered community information to clearly show the most urgent local needs. Build a smart way to quickly match and connect available volunteers with the specific tasks and areas where they are needed most.
+
+---
+
 ImpactConnect is a high-performance, AI-powered platform designed for NGOs to digitize community needs and intelligently allocate volunteer resources. Built for the **Google Solution Challenge 2026**, it leverages Google Cloud Vision AI and Gemini 1.5 Flash to transform fragmented field data into actionable social impact.
 
-![Project Header](https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=1200)
+![Project Header](/images/hero.png)
 
 ## 📌 Table of Contents
+- [📝 Project Overview](#-project-overview)
+- [🛠️ Tech Stack & Tools](#️-tech-stack--tools)
 - [🚀 Key Features](#-key-features)
 - [🏗️ How It Works (AI Pipeline)](#️-how-it-works-ai-pipeline)
 - [⏱️ Quick Start Guide](#️-quick-start-guide)
@@ -15,6 +24,26 @@ ImpactConnect is a high-performance, AI-powered platform designed for NGOs to di
 - [🛠️ Local Setup & Installation](#️-local-setup--installation)
 - [🐳 Docker & Cloud Deployment](#-docker--cloud-deployment)
 - [📄 License & Authors](#-license--authors)
+
+---
+
+## 🛠️ Tech Stack & Tools
+
+This project is built using a modern, scalable stack with a focus on Google Cloud technologies:
+
+*   **Core Logic:** Vanilla JavaScript (ES6+), HTML5, CSS3.
+*   **AI & Machine Learning:**
+    *   **Google Gemini 1.5 Flash:** For structured data extraction, reasoning, and Need Score calculation.
+    *   **Google Cloud Vision AI:** For high-accuracy OCR of paper surveys and field reports.
+*   **Backend & Database:**
+    *   **Firebase Firestore:** Real-time NoSQL database for syncing needs and volunteer data.
+    *   **Firebase Hosting:** For fast, global delivery of the platform.
+*   **Mapping & GIS:** **Leaflet.js** for interactive community hotspots and facility markers.
+*   **Infrastructure:**
+    *   **Docker:** Containerized environment for consistent deployment.
+    *   **Google Cloud Run:** Serverless deployment for production-grade scaling.
+    *   **GitHub Actions:** CI/CD pipeline for automated testing and deployment.
+*   **Design:** Custom CSS with Glassmorphism aesthetic, Google Fonts (Outfit), and Material Symbols.
 
 ---
 
